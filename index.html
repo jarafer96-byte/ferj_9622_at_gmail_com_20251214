@@ -629,6 +629,10 @@ input.stock-edit {
 </head>
 <body class="container py-5 modo-oscuro">
   
+ <div class="fondo-parallax" id="fondoParallax"></div>
+  
+  <!-- Fondo animado actual (ya lo tienes) -->
+  <div class="fondo-animado"></div>  
 
   <div class="text-center my-5 logo-wrapper">
     <img src="/static/img/Copilot_20251101_125947.png"
@@ -1371,7 +1375,85 @@ function actualizarStockPorTalle(idProducto, talleSeleccionado) {
     agregarBtn.textContent = "Sin stock";
   }
 }
+// 🔥 EFECTO PARALLAX CON GIROSCOPIO - AGREGAR AL FINAL DEL SCRIPT
+document.addEventListener('DOMContentLoaded', function() {
+  // Esperar a que todo cargue
+  setTimeout(function() {
+    const fondo = document.getElementById('fondoParallax');
+    if (!fondo) return;
     
+    console.log("🎮 Inicializando efecto parallax...");
+    
+    let intensity = 0.03; // Intensidad del efecto (0.01 = suave, 0.1 = fuerte)
+    let lastX = 0;
+    let lastY = 0;
+    
+    // 1. Efecto con giroscopio (dispositivos móviles)
+    if (window.DeviceOrientationEvent) {
+      console.log("📱 Usando giroscopio para efecto parallax");
+      
+      window.addEventListener('deviceorientation', function(event) {
+        const gamma = event.gamma || 0; // Inclinación izquierda-derecha (-90 a 90)
+        const beta = event.beta || 0;   // Inclinación adelante-atrás (-180 a 180)
+        
+        // Convertir a valores entre -1 y 1
+        const moveX = (gamma / 90) * intensity * 100;
+        const moveY = ((beta - 90) / 90) * intensity * 100;
+        
+        // Suavizar movimiento
+        lastX = moveX * 0.8 + lastX * 0.2;
+        lastY = moveY * 0.8 + lastY * 0.2;
+        
+        fondo.style.transform = `translate(${lastX}px, ${lastY}px)`;
+      });
+    }
+    
+    // 2. Efecto con mouse (computadoras)
+    else {
+      console.log("🖱️ Usando mouse para efecto parallax");
+      
+      document.addEventListener('mousemove', function(e) {
+        // Calcular posición del mouse (0 a 1)
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+        
+        // Mover fondo en dirección opuesta
+        const moveX = (mouseX - 0.5) * 30 * intensity;
+        const moveY = (mouseY - 0.5) * 30 * intensity;
+        
+        // Suavizar
+        lastX = moveX * 0.1 + lastX * 0.9;
+        lastY = moveY * 0.1 + lastY * 0.9;
+        
+        fondo.style.transform = `translate(${lastX}px, ${lastY}px)`;
+      });
+    }
+    
+    // 3. Efecto con scroll (parallax clásico)
+    window.addEventListener('scroll', function() {
+      const scrolled = window.pageYOffset;
+      const moveY = scrolled * -0.3; // 30% de velocidad
+      
+      // Combinar con otros efectos si no hay giroscopio
+      if (!window.DeviceOrientationEvent) {
+        fondo.style.transform = `translate(0px, ${lastY + moveY}px)`;
+      }
+    });
+    
+    // 4. Mostrar fondo después de cargar
+    setTimeout(function() {
+      fondo.style.opacity = '1';
+      console.log("✅ Efecto parallax activado");
+    }, 800);
+    
+  }, 1000); // Esperar 1 segundo
+});
+
+// 🔥 FUNCIÓN PARA AJUSTAR INTENSIDAD (opcional - para debug)
+function ajustarIntensidadParallax(nuevaIntensidad) {
+  intensity = nuevaIntensidad;
+  console.log(`🎚️ Intensidad parallax ajustada a: ${intensidad}`);
+}    
 /////////////////////////////////
 function habilitarScrollHorizontal(selector) {
   const panel = document.querySelector(selector);
