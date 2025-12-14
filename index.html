@@ -1826,6 +1826,16 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
   }
 
   try {
+    // 🔥 PASO 0: Obtener precio anterior ANTES de hacer cualquier cosa (para localStorage)
+    let precioViejo = 0;
+    if (window.productoEditandoId) {
+      const productoExistente = window.todosLosProductos?.find(p => p.id_base === window.productoEditandoId);
+      if (productoExistente) {
+        precioViejo = parseFloat(productoExistente.precio) || 0;
+        console.log(`💰 Precio anterior encontrado: $${precioViejo}`);
+      }
+    }
+
     // 1. Subir foto principal optimizada
     let foto_url = "";
     if (window.fotoOptimizada) {
@@ -1853,7 +1863,7 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       console.log("🔄 Manteniendo foto principal existente:", foto_url);
     }
 
-    // 🔥 NUEVO: 2. Subir fotos adicionales
+    // 🔥 2. Subir fotos adicionales
     const fotosAdicionalesUrls = [];
     
     // Primero, incluir fotos existentes si estamos editando
@@ -1911,25 +1921,13 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
 
     // 3. Obtener datos del formulario
     const nombre = document.getElementById("nombreProd").value.trim();
-    const precio = parseFloat(document.getElementById("precioProd").value);
-    
-    // 🔥 NUEVO: Obtener precio anterior
-    const precioAnteriorInput = document.getElementById("precioAnteriorProd");
-    let precioAnterior = 0;
-    if (precioAnteriorInput) {
-      precioAnterior = parseFloat(precioAnteriorInput.value) || 0;
-      // Solo guardar precio anterior si es mayor que el precio actual (es oferta)
-      if (precioAnterior <= precio) {
-        precioAnterior = 0; // No es oferta
-      }
-    }
-    
+    const precioNuevo = parseFloat(document.getElementById("precioProd").value);
     const descripcion = document.getElementById("descripcionProd").value.trim();
     const tallesRaw = document.getElementById("tallesProd").value.trim();
     const grupo = document.getElementById("grupoProd")?.value.trim() || "General";
     const subgrupo = document.getElementById("subgrupoProd")?.value.trim() || "general";
 
-    if (!nombre || isNaN(precio) || precio <= 0 || !grupo) {
+    if (!nombre || isNaN(precioNuevo) || precioNuevo <= 0 || !grupo) {
       alert("❌ Faltan campos obligatorios: nombre/grupo/precio");
       return;
     }
@@ -1968,11 +1966,22 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
 
     console.log("📦 Stock procesado:", stockPorTalle);
 
-    // 🔥 5. Crear objeto producto CON FOTOS ADICIONALES Y PRECIO ANTERIOR
+    // 🔥 5. GUARDAR PRECIO ANTERIOR EN LOCALSTORAGE (SOLO SI ES OFERTA)
+    if (window.productoEditandoId && precioViejo > precioNuevo) {
+      try {
+        const historial = JSON.parse(localStorage.getItem('historial_precios') || '{}');
+        historial[window.productoEditandoId] = precioViejo;
+        localStorage.setItem('historial_precios', JSON.stringify(historial));
+        console.log(`💰 Precio anterior guardado en localStorage: $${precioViejo} -> $${precioNuevo} (OFERTA)`);
+      } catch(e) {
+        console.log("⚠️ Error guardando en localStorage:", e);
+      }
+    }
+
+    // 6. Crear objeto producto
     const producto = {
       nombre: nombre,
-      precio: precio,
-      precio_anterior: precioAnterior, // 🔥 NUEVO: Campo para ofertas
+      precio: precioNuevo,
       descripcion: descripcion || "",
       talles: talles,
       grupo: grupo,
@@ -1980,9 +1989,10 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       stock_por_talle: stockPorTalle,
       imagen_url: foto_url,
       fotos_adicionales: fotosAdicionalesUrls
+      // 🔥 NOTA: Ya NO incluimos precio_anterior aquí
     };
 
-    // 🔥 6. Preparar payload con ES_EDICION
+    // 7. Preparar payload
     const esEdicion = window.productoEditandoId ? true : false;
     const payload = {
       producto: producto,
@@ -1994,17 +2004,13 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
     if (esEdicion) {
       payload.producto.id_base = window.productoEditandoId;
       console.log("🔄 Modo EDICIÓN para ID:", window.productoEditandoId);
-      console.log(`📸 Fotos adicionales a guardar: ${fotosAdicionalesUrls.length}`);
     } else {
       console.log("➕ Modo CREACIÓN de nuevo producto");
     }
 
     console.log("📤 Payload para backend:", JSON.stringify(payload, null, 2));
-    console.log("⚙️ Parámetro es_edicion:", payload.es_edicion);
-    console.log("🖼️ Fotos adicionales en payload:", fotosAdicionalesUrls.length);
-    console.log("💰 Precio anterior:", precioAnterior > 0 ? `$${precioAnterior} (OFERTA -${Math.round(((precioAnterior - precio) / precioAnterior) * 100)}%)` : "No es oferta");
 
-    // 🔥 7. Enviar al backend
+    // 8. Enviar al backend
     const endpoint = "https://mpagina.onrender.com/guardar-producto";
     
     const respGuardar = await fetch(endpoint, {
@@ -2027,23 +2033,24 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
         `✅ Producto actualizado correctamente (${fotosAdicionalesUrls.length} fotos adicionales)` : 
         `✅ Producto creado correctamente (${fotosAdicionalesUrls.length} fotos adicionales)`;
       
-      if (precioAnterior > 0) {
-        const descuento = Math.round(((precioAnterior - precio) / precioAnterior) * 100);
-        alert(`${mensaje}\n🔥 ¡OFERTA REGISTRADA! -${descuento}% de descuento`);
+      // 🔥 MOSTRAR MENSAJE DE OFERTA SI APLICA
+      if (precioViejo > precioNuevo) {
+        const descuento = Math.round(((precioViejo - precioNuevo) / precioViejo) * 100);
+        alert(`${mensaje}\n🔥 ¡OFERTA DETECTADA! -${descuento}% de descuento`);
       } else {
         alert(mensaje);
       }
       
-      // 8. Limpiar formulario
+      // 9. Limpiar formulario
       resetearFormularioAdmin();
       
-      // 9. Limpiar variables temporales
+      // 10. Limpiar variables temporales
       window.fotosAdicionalesExistentes = null;
       
-      // 10. Ocultar formulario
+      // 11. Ocultar formulario
       document.getElementById("adminCard").classList.add("d-none");
       
-      // 11. Refrescar productos
+      // 12. Refrescar productos
       setTimeout(() => {
         if (typeof cargarProductos === "function") {
           cargarProductos();
@@ -2061,6 +2068,19 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
     alert("❌ Error al guardar producto: " + err.message);
   }
 });
+// 🔥 FUNCIÓN AUXILIAR PARA LIMPIAR HISTORIAL (opcional)
+function limpiarHistorialPrecios() {
+  localStorage.removeItem('historial_precios');
+  console.log("🧹 Historial de precios limpiado");
+}
+
+// 🔥 INICIALIZAR HISTORIAL SI NO EXISTE
+(function() {
+  if (!localStorage.getItem('historial_precios')) {
+    localStorage.setItem('historial_precios', JSON.stringify({}));
+    console.log("📊 Historial de precios inicializado");
+  }
+})();
     
 function salirAdmin() {
   console.log("🚪 Saliendo de modo admin, limpiando token...");
