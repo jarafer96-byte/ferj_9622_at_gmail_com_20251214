@@ -2674,7 +2674,7 @@ function renderProducto(p) {
     stockInicial = stockGeneral;
   }
   
-  const mostrarStock = stockInicial > 0 ? stockInicial : 0;
+  const mostrarStock = stockInicial > 0 ? stockInicial : "Sin stock";
   const claseStock = stockInicial > 0 ? "" : "text-danger";
 
   // Escape de caracteres
