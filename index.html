@@ -665,9 +665,6 @@ input.stock-edit {
 </head>
 <body class="container py-5 modo-oscuro">
   
-  <div class="fondo"></div>
-  <div class="fondo-overlay"></div>
-  
   <div class="text-center my-5 logo-wrapper">
     <img src="/static/img/Copilot_20251101_125947.png"
          alt="Logo"
@@ -1035,36 +1032,7 @@ function renderizarProductos(productos) {
   });
   
   console.log("✅ " + productos.length + " productos renderizados");
-}
-function fixMobileBackground() {
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    const fondo = document.querySelector('.fondo');
-    const fondoOverlay = document.querySelector('.fondo-overlay');
-    
-    // Para iOS, usar position: absolute con overflow
-    document.body.style.overflow = 'auto';
-    document.body.style.height = 'auto';
-    
-    if (fondo) {
-      fondo.style.position = 'absolute';
-      fondo.style.height = '100%';
-      fondo.style.minHeight = '100vh';
-    }
-    
-    if (fondoOverlay) {
-      fondoOverlay.style.position = 'absolute';
-      fondoOverlay.style.height = '100%';
-      fondoOverlay.style.minHeight = '100vh';
-    }
-  }
-}
-
-// Ejecutar cuando la página cargue y al redimensionar
-document.addEventListener('DOMContentLoaded', fixMobileBackground);
-window.addEventListener('resize', fixMobileBackground);
-window.addEventListener('orientationchange', function() {
-  setTimeout(fixMobileBackground, 100);
-});    
+} 
 function cargarProductoCompletoParaEditar(id_base) {
   const producto = window.todosLosProductos?.find(p => p.id_base === id_base);
   if (producto) {
