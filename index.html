@@ -33,22 +33,14 @@
 }
 body {
   font-family: 'Raleway', sans-serif;
-  background-image: url("/static/img/mini_1_jfjf8.jpeg");
-  background-size: auto;
-  background-repeat: repeat;
-  background-position: top left;
-  background-attachment: fixed;
+  background: url("/static/img/mini_1_jfjf8.jpeg") center / cover fixed no-repeat #000;
   padding-top: 70px;
 }
 /* 📱 Para móviles */
 @media (max-width: 768px) {
   body {
-    background-image: url("/static/img/mini_1_jfjf8.jpeg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: scroll !important; /* CAMBIO CLAVE */
-    height: 100vh !important;
+    background: url("/static/img/mini_1_jfjf8.jpeg") center / cover no-repeat #000;
+    background-attachment: scroll !important;
   }
   .barra-navegacion {
     border: 1px solid #000000f5; /* borde solo en móvil */
