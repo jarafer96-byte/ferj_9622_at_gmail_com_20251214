@@ -3194,6 +3194,174 @@ function actualizarUIStock(idProducto, stockDisponible, talleSeleccionado) {
   
   console.log(`✅ Stock actualizado: Talle ${talleSeleccionado} → ${stockDisponible} unidades`);
 }
+
+    
+// 🔥 FUNCIÓN COMPLETA PARA ACTUALIZAR OFERTAS EN LOTE (para administradores)
+async function actualizarOfertasAutomaticamente() {
+  if (!window.modoAdmin) {
+    console.log("❌ Solo administradores pueden usar esta función");
+    return;
+  }
+  
+  console.log("🔄 Iniciando actualización automática de ofertas...");
+  
+  const productos = window.todosLosProductos || [];
+  let ofertasActualizadas = 0;
+  let productosProcesados = 0;
+  let errores = 0;
+  
+  if (productos.length === 0) {
+    console.log("❌ No hay productos para analizar");
+    return;
+  }
+  
+  console.log(`📊 Analizando ${productos.length} productos...`);
+  
+  // 🔥 1. Calcular promedios por grupo para referencia
+  const promediosPorGrupo = {};
+  const productosPorGrupo = {};
+  
+  // Agrupar productos por grupo
+  productos.forEach(p => {
+    const grupo = p.grupo || "General";
+    const precio = parseFloat(p.precio) || 0;
+    
+    if (!promediosPorGrupo[grupo]) {
+      promediosPorGrupo[grupo] = { suma: 0, cantidad: 0 };
+      productosPorGrupo[grupo] = [];
+    }
+    
+    promediosPorGrupo[grupo].suma += precio;
+    promediosPorGrupo[grupo].cantidad++;
+    productosPorGrupo[grupo].push(p);
+  });
+  
+  // Calcular promedios
+  Object.keys(promediosPorGrupo).forEach(grupo => {
+    promediosPorGrupo[grupo].promedio = 
+      promediosPorGrupo[grupo].suma / promediosPorGrupo[grupo].cantidad;
+    console.log(`📈 Grupo "${grupo}": Promedio $${promediosPorGrupo[grupo].promedio.toFixed(2)} (${promediosPorGrupo[grupo].cantidad} productos)`);
+  });
+  
+  // 🔥 2. Analizar cada producto
+  for (const producto of productos) {
+    try {
+      productosProcesados++;
+      
+      const precioActual = parseFloat(producto.precio) || 0;
+      const precioAnteriorActual = parseFloat(producto.precio_anterior) || 0;
+      const grupo = producto.grupo || "General";
+      const promedioGrupo = promediosPorGrupo[grupo]?.promedio || precioActual;
+      
+      // Si ya tiene oferta válida, mantenerla
+      if (precioAnteriorActual > precioActual) {
+        console.log(`✅ Producto "${producto.nombre}" ya tiene oferta activa (${precioAnteriorActual} → ${precioActual})`);
+        continue;
+      }
+      
+      let necesitaActualizar = false;
+      let nuevoPrecioAnterior = 0;
+      
+      // 🔥 LÓGICA 1: Si el precio está por debajo del promedio del grupo (20% o más)
+      if (precioActual < promedioGrupo * 0.8) {
+        // El precio es al menos 20% menor que el promedio del grupo
+        nuevoPrecioAnterior = Math.round(promedioGrupo); // Usar promedio como referencia
+        necesitaActualizar = true;
+        console.log(`🔥 ${producto.nombre}: Está 20%+ bajo el promedio del grupo ($${precioActual} < $${promedioGrupo.toFixed(2)})`);
+      }
+      
+      // 🔥 LÓGICA 2: Comparar con productos similares en el mismo grupo
+      const productosSimilares = productosPorGrupo[grupo] || [];
+      if (productosSimilares.length > 1) {
+        const preciosSimilares = productosSimilares
+          .map(p => parseFloat(p.precio) || 0)
+          .filter(p => p > 0);
+        
+        if (preciosSimilares.length > 0) {
+          const precioMaximo = Math.max(...preciosSimilares);
+          const precioMinimo = Math.min(...preciosSimilares);
+          
+          // Si el precio está cerca del mínimo pero no es el único
+          if (precioActual <= precioMinimo * 1.1 && precioActual < precioMaximo * 0.9) {
+            nuevoPrecioAnterior = precioMaximo; // Usar el precio más alto como referencia
+            necesitaActualizar = true;
+            console.log(`🔥 ${producto.nombre}: Es de los más baratos en su grupo (${precioActual} vs máximo ${precioMaximo})`);
+          }
+        }
+      }
+      
+      // 🔥 LÓGICA 3: Detectar precios que termin en .99 o .90 (típico de ofertas)
+      const decimal = precioActual - Math.floor(precioActual);
+      if ((decimal >= 0.95 && decimal <= 0.99) || decimal === 0.90) {
+        // Posible precio de oferta, buscar referencia
+        const referencia = Math.round(precioActual / 0.8); // Asume 20% de descuento
+        if (referencia > precioActual) {
+          nuevoPrecioAnterior = referencia;
+          necesitaActualizar = true;
+          console.log(`🔥 ${producto.nombre}: Tiene patrón de precio de oferta (termina en .${Math.round(decimal*100)})`);
+        }
+      }
+      
+      // 🔥 LÓGICA 4: Productos sin stock no deberían estar en oferta
+      const tieneStock = producto.stock > 0 || 
+                        (producto.stock_por_talle && Object.values(producto.stock_por_talle).some(v => v > 0));
+      
+      if (!tieneStock && precioAnteriorActual > 0) {
+        // Producto agotado pero marcado como oferta, quitar oferta
+        nuevoPrecioAnterior = 0;
+        necesitaActualizar = true;
+        console.log(`📦 ${producto.nombre}: Sin stock, quitando oferta`);
+      }
+      
+      // 🔥 3. Aplicar cambios si es necesario
+      if (necesitaActualizar && nuevoPrecioAnterior !== precioAnteriorActual) {
+        try {
+          
+          ofertasActualizadas++;
+        } catch (error) {
+          console.error(`❌ Error actualizando ${producto.nombre}:`, error);
+          errores++;
+        }
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error procesando producto ${producto.nombre}:`, error);
+      errores++;
+    }
+  }
+  
+  // 🔥 4. Resumen
+  console.log(`
+🎯 RESUMEN ACTUALIZACIÓN DE OFERTAS:
+   📦 Productos analizados: ${productosProcesados}
+   🔥 Ofertas actualizadas: ${ofertasActualizadas}
+   ❌ Errores: ${errores}
+   ⏱️  Tiempo: ${new Date().toLocaleTimeString()}
+  `);
+  
+  // 🔥 5. Si hubo cambios, actualizar la vista
+  if (ofertasActualizadas > 0) {
+    alert(`✅ Se actualizaron ${ofertasActualizadas} ofertas automáticamente`);
+    
+    // Recargar productos
+    setTimeout(() => {
+      if (typeof cargarProductos === "function") {
+        cargarProductos();
+      }
+    }, 2000);
+  } else {
+    console.log("ℹ️ No se detectaron cambios necesarios en las ofertas");
+  }
+  
+  return {
+    total: productosProcesados,
+    actualizados: ofertasActualizadas,
+    errores: errores
+  };
+}
+
+
+
     
 // 👉 Función que arma el array de items reales desde el carrito
 function obtenerCarrito() {
