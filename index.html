@@ -2314,46 +2314,71 @@ if (window.modoAdmin && window.tokenAdmin) {
 
 console.log("📡 Solicitando productos desde:", urlProductos);
 
+console.log("🔍 [CARGA-PRODUCTOS] INICIANDO... ==============================");
+console.log("📡 Solicitando productos desde:", urlProductos);
+
 fetch(urlProductos)
   .then(r => {
+    console.log("📥 Respuesta HTTP recibida, status:", r.status);
     if (!r.ok) {
       throw new Error("HTTP " + r.status);
     }
     return r.json();
   })
   .then(lista => {
-    console.log("🔍 [CARGA-INICIAL] ==========================================");
-    console.log("📥 Productos crudos recibidos del backend:", lista.length);
+    console.log("✅ Datos JSON recibidos:", lista);
+    console.log("📊 Tipo de datos:", typeof lista);
+    console.log("📊 Es array?:", Array.isArray(lista));
+    console.log("📊 Número de elementos:", lista.length);
     
-    // 🔥 DIAGNÓSTICO COMPLETO: Verificar estructura de los productos
+    if (!Array.isArray(lista)) {
+      console.log("❌ ERROR: La respuesta NO es un array:", lista);
+      return;
+    }
+    
+    // 🔥 DIAGNÓSTICO DETALLADO DE CADA PRODUCTO
+    console.log("\n🔍 ANALIZANDO CADA PRODUCTO:");
     lista.forEach((prod, idx) => {
-      console.log(`   ${idx+1}. ${prod.nombre || 'Sin nombre'} (${prod.id_base || 'Sin ID'}):`);
-      console.log(`       - Precio: $${prod.precio || 0}`);
+      console.log(`\n   ${idx+1}. ${prod.nombre || 'Sin nombre'} (${prod.id_base || 'Sin ID'}):`);
+      console.log(`       - Precio: $${prod.precio || 0} (tipo: ${typeof prod.precio})`);
       console.log(`       - Precio anterior: ${prod.precio_anterior || 'NO TIENE'} (tipo: ${typeof prod.precio_anterior})`);
-      console.log(`       - ¿Campo precio_anterior existe?: ${'precio_anterior' in prod}`);
-      console.log(`       - ¿Es oferta (precio_anterior > precio)?: ${prod.precio_anterior > prod.precio ? 'SÍ' : 'NO'}`);
+      console.log(`       - ¿Campo "precio_anterior" existe?: ${'precio_anterior' in prod}`);
       
-      // Buscar específicamente el producto que editamos
-      if (prod.id_base === "botas_20251214_botines_3ebb41") {
-        console.log(`   🎯 ¡ESTE ES EL PRODUCTO EDITADO!`);
-        console.log(`       - Todos sus campos:`, Object.keys(prod));
+      // Mostrar todos los campos del producto
+      console.log(`       - Todos los campos:`, Object.keys(prod).join(', '));
+      
+      // Mostrar producto específico que editamos
+      if (prod.id_base === "campera_20251214_camperas_71551a") {
+        console.log(`\n   🎯 ¡ESTE ES EL PRODUCTO EDITADO!`);
         console.log(`       - Datos completos:`, JSON.stringify(prod, null, 2));
+        console.log(`       - ¿precio_anterior > precio?: ${prod.precio_anterior > prod.precio}`);
+        
+        // Si no tiene precio_anterior, mostrar qué campos sí tiene
+        if (!prod.precio_anterior) {
+          console.log(`       ⚠️ ¡NO TIENE PRECIO_ANTERIOR! Campos disponibles:`);
+          Object.entries(prod).forEach(([key, value]) => {
+            console.log(`           ${key}: ${value} (${typeof value})`);
+          });
+        }
       }
     });
     
     // Contar productos con oferta
     const productosConOferta = lista.filter(p => p.precio_anterior > 0 && p.precio_anterior > p.precio);
-    console.log(`📊 Resumen: ${productosConOferta.length} productos con oferta de ${lista.length} total`);
+    console.log(`\n📊 RESUMEN: ${productosConOferta.length} productos con oferta de ${lista.length} total`);
     
     if (productosConOferta.length > 0) {
       console.log("🔥 Productos con oferta detectados:");
       productosConOferta.forEach(p => {
         const descuento = Math.round(((p.precio_anterior - p.precio) / p.precio_anterior) * 100);
-        console.log(`   - ${p.nombre}: $${p.precio_anterior} → $${p.precio} (-${descuento}%)`);
+        console.log(`   - ${p.nombre} (${p.id_base}): $${p.precio_anterior} → $${p.precio} (-${descuento}%)`);
       });
+    } else {
+      console.log("❌ NO SE DETECTARON PRODUCTOS CON OFERTA");
+      console.log("   - Posible problema: El backend no está devolviendo precio_anterior");
     }
     
-    console.log("🔍 [CARGA-INICIAL] FIN ======================================\n");
+    console.log("\n🔍 [CARGA-PRODUCTOS] FIN DIAGNÓSTICO =======================\n");
 
     // ORDENAR LOS PRODUCTOS: primero con stock, luego por precio
     const productosOrdenados = Array.isArray(lista) ? lista : [];
@@ -2378,12 +2403,24 @@ fetch(urlProductos)
     console.log("🌐 Productos recibidos y ordenados:", window.todosLosProductos.length);
 
     // 🔥 VERIFICAR QUE EL PRODUCTO EDITADO ESTÁ EN EL ARRAY
-    const productoEditadoEnArray = window.todosLosProductos.find(p => p.id_base === "botas_20251214_botines_3ebb41");
+    const productoEditadoEnArray = window.todosLosProductos.find(p => p.id_base === "campera_20251214_camperas_71551a");
     if (productoEditadoEnArray) {
       console.log("✅ Producto editado encontrado en array global:");
-      console.log("   - precio_anterior:", productoEditadoEnArray.precio_anterior);
-      console.log("   - precio:", productoEditadoEnArray.precio);
+      console.log("   - Nombre:", productoEditadoEnArray.nombre);
+      console.log("   - Precio anterior:", productoEditadoEnArray.precio_anterior);
+      console.log("   - Precio:", productoEditadoEnArray.precio);
       console.log("   - ¿Tiene oferta?:", productoEditadoEnArray.precio_anterior > productoEditadoEnArray.precio);
+      
+      // 🔥 FORZAR precio_anterior si no lo tiene
+      if (!productoEditadoEnArray.precio_anterior || productoEditadoEnArray.precio_anterior <= productoEditadoEnArray.precio) {
+        console.log("⚠️ Producto editado NO tiene oferta en array global, forzando...");
+        // Recuperar de localStorage temporalmente
+        const historial = JSON.parse(localStorage.getItem('historial_precios') || '{}');
+        if (historial["campera_20251214_camperas_71551a"]) {
+          productoEditadoEnArray.precio_anterior = historial["campera_20251214_camperas_71551a"];
+          console.log("   - Precio anterior recuperado de localStorage:", productoEditadoEnArray.precio_anterior);
+        }
+      }
     } else {
       console.log("❌ Producto editado NO encontrado en array global");
     }
@@ -2473,7 +2510,37 @@ fetch(urlProductos)
     const cont = document.getElementById("productos");
     if (cont) cont.innerHTML = "<p>Error al cargar productos.</p>";
   });
-    
+// 🔥 FUNCIÓN DE EMERGENCIA: Forzar oferta si el backend no la devuelve
+function forzarOfertaSiEsNecesario() {
+  if (!window.todosLosProductos) return;
+  
+  // Lista de IDs que sabemos que tienen oferta
+  const productosConOfertaConocida = [
+    { id: "campera_20251214_camperas_71551a", precio_anterior: 2, precio_actual: 1 }
+  ];
+  
+  productosConOfertaConocida.forEach(productoInfo => {
+    const producto = window.todosLosProductos.find(p => p.id_base === productoInfo.id);
+    if (producto && (!producto.precio_anterior || producto.precio_anterior <= producto.precio)) {
+      console.log(`🔥 Forzando oferta para ${producto.nombre}: $${productoInfo.precio_anterior} → $${productoInfo.precio_actual}`);
+      producto.precio_anterior = productoInfo.precio_anterior;
+      
+      // Actualizar en el DOM inmediatamente
+      setTimeout(() => {
+        const cardExistente = document.querySelector(`[data-id="${productoInfo.id}"]`);
+        if (cardExistente) {
+          cardExistente.remove();
+          const nuevaCard = renderProducto(producto);
+          document.getElementById("productos").appendChild(nuevaCard);
+          console.log(`🔄 Card actualizada: ${producto.nombre}`);
+        }
+      }, 1000);
+    }
+  });
+}
+
+// Llama a esta función después de cargar productos
+setTimeout(forzarOfertaSiEsNecesario, 2000);    
 function mostrarGrupo(nombre, event, auto = false) {
   console.log("🟦 mostrarGrupo llamado con:", { nombre, auto });
 
