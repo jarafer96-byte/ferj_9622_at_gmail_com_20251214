@@ -2941,13 +2941,20 @@ function mostrarTodos() {
 
   if (!panelGrupos || !panelSub) return;
 
+  // Forzar reflow antes de cambiar clases
+  void panelGrupos.offsetWidth;
+  
+  // Animar la aparición/desaparición
   panelGrupos.classList.toggle('oculta');
-
+  
+  // Si el panel subcategorías está visible, ocultarlo con animación
   if (!panelSub.classList.contains('oculta')) {
     panelSub.classList.add('oculta');
   }
+  
+  // Ajustar posiciones después de la animación
+  setTimeout(ajustarPosicionesPaneles, 10);
 }
-window.mostrarTodos = mostrarTodos; 
       
 function irAContacto() {
   const contacto = document.getElementById('ubicacion');
