@@ -3742,10 +3742,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // Botón Productos
   const btnProductos = document.getElementById("btnProductos");
   if (btnProductos) {
-    btnProductos.addEventListener("click", () => {
+    btnProductos.addEventListener("click", (e) => {
+      e.stopPropagation();
       const panelGrupos = document.getElementById("panelGrupos");
-      if (panelGrupos) panelGrupos.classList.remove("oculta");
-      setTimeout(ajustarPosicionesPaneles, 0);
+      if (panelGrupos) {
+        // Forzar reflow para animación
+        void panelGrupos.offsetWidth;
+        if (panelGrupos.classList.contains('oculta')) {
+          panelGrupos.classList.remove("oculta");
+          console.log("👉 Mostrando panel grupos desde botón Productos");
+        } else {
+          panelGrupos.classList.add("oculta");
+          console.log("👉 Ocultando panel grupos desde botón Productos");
+        }
+      }
+      setTimeout(ajustarPosicionesPaneles, 100);
     });
   }
 
@@ -3775,22 +3786,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Botón Subcategorías
+  // Botón Subcategorías (si existe)
   const btnSubcategorias = document.getElementById("btnSubcategorias");
   if (btnSubcategorias) {
     btnSubcategorias.addEventListener("click", () => {
       const panelSub = document.getElementById("panelSubcategorias");
-      if (panelSub) panelSub.classList.remove("oculta");
-      setTimeout(ajustarPosicionesPaneles, 0);
+      if (panelSub) {
+        // Forzar reflow para animación
+        void panelSub.offsetWidth;
+        if (panelSub.classList.contains('oculta')) {
+          panelSub.classList.remove("oculta");
+          console.log("👉 Mostrando panel subcategorías");
+        } else {
+          panelSub.classList.add("oculta");
+          console.log("👉 Ocultando panel subcategorías");
+        }
+      }
+      setTimeout(ajustarPosicionesPaneles, 100);
     });
   }
 
   // Delegación de eventos para botones de grupo dinámicos
   document.addEventListener("click", (e) => {
+    // Animación para botones de grupo
     if (e.target.classList.contains("btn-grupo")) {
-      setTimeout(ajustarPosicionesPaneles, 0);
+      setTimeout(() => {
+        ajustarPosicionesPaneles();
+      }, 150);
     }
 
+    // Animación para botones de subgrupo
+    if (e.target.classList.contains("btn-subgrupo")) {
+      setTimeout(() => {
+        ajustarPosicionesPaneles();
+      }, 150);
+    }
+
+    // Cerrar carrito al hacer clic fuera
     const carritoDiv = document.getElementById("carrito");
     const toggleBtn = document.getElementById("toggleCarrito");
     if (carritoDiv && toggleBtn) {
@@ -3801,17 +3833,35 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Cerrar paneles al hacer clic fuera (con animación)
     const panelGrupos = document.getElementById("panelGrupos");
     const panelSub = document.getElementById("panelSubcategorias");
     if (panelGrupos && panelSub) {
       const esClickDentroGrupos = panelGrupos.contains(e.target);
       const esClickDentroSub = panelSub.contains(e.target);
       const esBotonGrupo = e.target.classList.contains("btn-grupo");
+      const esBotonSubgrupo = e.target.classList.contains("btn-subgrupo");
       const esBotonNavegacion = !!e.target.closest(".barra-navegacion");
 
-      if (!esClickDentroGrupos && !esClickDentroSub && !esBotonGrupo && !esBotonNavegacion) {
-        panelGrupos.classList.add("oculta");
-        panelSub.classList.add("oculta");
+      // Solo cerrar si no se hizo clic en elementos relacionados
+      if (!esClickDentroGrupos && !esClickDentroSub && !esBotonGrupo && 
+          !esBotonSubgrupo && !esBotonNavegacion && e.target.id !== 'btnProductos') {
+        
+        // Animar el cierre de los paneles
+        if (!panelGrupos.classList.contains('oculta')) {
+          void panelGrupos.offsetWidth;
+          panelGrupos.classList.add("oculta");
+          console.log("👉 Cerrando panel grupos (clic fuera)");
+        }
+        
+        if (!panelSub.classList.contains('oculta')) {
+          void panelSub.offsetWidth;
+          panelSub.classList.add("oculta");
+          console.log("👉 Cerrando panel subcategorías (clic fuera)");
+        }
+        
+        // Ajustar posiciones después de la animación
+        setTimeout(ajustarPosicionesPaneles, 200);
       }
     }
   });
@@ -3850,23 +3900,46 @@ document.addEventListener("DOMContentLoaded", () => {
       const cont = document.getElementById("productos");
       if (!cont) return;
 
-      cont.innerHTML = "";
-      productosFiltrados.forEach((p) => {
-        const card = renderProducto(p);
-        cont.appendChild(card);
-        setTimeout(() => card.classList.remove("fade-reorder"), 50);
-      });
+      // Animar la transición
+      cont.style.opacity = '0.5';
+      cont.style.transition = 'opacity 0.3s ease';
+      
+      setTimeout(() => {
+        cont.innerHTML = "";
+        productosFiltrados.forEach((p) => {
+          const card = renderProducto(p);
+          cont.appendChild(card);
+          setTimeout(() => card.classList.remove("fade-reorder"), 50);
+        });
+        
+        // Restaurar opacidad
+        setTimeout(() => {
+          cont.style.opacity = '1';
+        }, 50);
+      }, 300);
     });
   }
 
   // 👉 Mostrar card de admin y botón Mercado Pago si corresponde
   if (window.modoAdmin) {
     const adminCard = document.getElementById("adminCard");
-    if (adminCard) adminCard.classList.remove("d-none");
+    if (adminCard) {
+      adminCard.style.opacity = '0';
+      adminCard.classList.remove("d-none");
+      setTimeout(() => {
+        adminCard.style.transition = 'opacity 0.5s ease';
+        adminCard.style.opacity = '1';
+      }, 100);
+    }
 
     const btnConfigMP = document.getElementById("configurarMP");
     if (btnConfigMP) {
+      btnConfigMP.style.opacity = '0';
       btnConfigMP.classList.remove("d-none");
+      setTimeout(() => {
+        btnConfigMP.style.transition = 'opacity 0.5s ease';
+        btnConfigMP.style.opacity = '1';
+      }, 200);
     }
   }
 
@@ -3879,7 +3952,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.public_key) {
         window.mp = new MercadoPago(data.public_key, { locale: 'es-AR' });
         const pagarBtn = document.getElementById('btn_pagar');
-        if (pagarBtn) pagarBtn.disabled = false;
+        if (pagarBtn) {
+          pagarBtn.disabled = false;
+          pagarBtn.style.opacity = '0';
+          setTimeout(() => {
+            pagarBtn.style.transition = 'opacity 0.5s ease';
+            pagarBtn.style.opacity = '1';
+          }, 300);
+        }
       } else {
         const pagarBtn = document.getElementById('btn_pagar');
         if (pagarBtn) pagarBtn.disabled = true;
@@ -3954,8 +4034,39 @@ document.addEventListener("DOMContentLoaded", () => {
         const emailVendedor = urlParams.get('email');
         console.log('✅ Mercado Pago configurado exitosamente para:', emailVendedor);
         
-        // Mostrar mensaje de éxito
-        alert('✅ ¡Mercado Pago configurado exitosamente! Ahora puedes recibir pagos.');
+        // Mostrar mensaje de éxito con animación
+        const alertDiv = document.createElement('div');
+        alertDiv.textContent = '✅ ¡Mercado Pago configurado exitosamente! Ahora puedes recibir pagos.';
+        alertDiv.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%) translateY(-20px);
+          background: linear-gradient(45deg, #4CAF50, #8BC34A);
+          color: white;
+          padding: 15px 30px;
+          border-radius: 10px;
+          z-index: 9999;
+          opacity: 0;
+          transition: all 0.5s ease;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+          font-family: 'Raleway', sans-serif;
+          font-weight: bold;
+        `;
+        document.body.appendChild(alertDiv);
+        
+        // Animar entrada
+        setTimeout(() => {
+          alertDiv.style.opacity = '1';
+          alertDiv.style.transform = 'translateX(-50%) translateY(0)';
+        }, 100);
+        
+        // Animar salida después de 3 segundos
+        setTimeout(() => {
+          alertDiv.style.opacity = '0';
+          alertDiv.style.transform = 'translateX(-50%) translateY(-20px)';
+          setTimeout(() => alertDiv.remove(), 500);
+        }, 3000);
         
         // Limpiar la URL (quitar parámetros)
         const nuevaURL = window.location.pathname + '?email=' + encodeURIComponent(emailVendedor);
@@ -3968,13 +4079,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     if (urlParams.get('mp_error') === '1') {
-        alert('❌ Hubo un error al configurar Mercado Pago. Por favor, intenta nuevamente.');
+        const errorDiv = document.createElement('div');
+        errorDiv.textContent = '❌ Hubo un error al configurar Mercado Pago. Por favor, intenta nuevamente.';
+        errorDiv.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%) translateY(-20px);
+          background: linear-gradient(45deg, #f44336, #FF5252);
+          color: white;
+          padding: 15px 30px;
+          border-radius: 10px;
+          z-index: 9999;
+          opacity: 0;
+          transition: all 0.5s ease;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+          font-family: 'Raleway', sans-serif;
+          font-weight: bold;
+        `;
+        document.body.appendChild(errorDiv);
+        
+        // Animar entrada
+        setTimeout(() => {
+          errorDiv.style.opacity = '1';
+          errorDiv.style.transform = 'translateX(-50%) translateY(0)';
+        }, 100);
+        
+        // Animar salida después de 3 segundos
+        setTimeout(() => {
+          errorDiv.style.opacity = '0';
+          errorDiv.style.transform = 'translateX(-50%) translateY(-20px)';
+          setTimeout(() => errorDiv.remove(), 500);
+        }, 3000);
         
         // Limpiar la URL
         const nuevaURL = window.location.pathname;
         window.history.replaceState({}, document.title, nuevaURL);
     }
   }, 100);
+  
+  // Ajustar posiciones iniciales después de un breve delay
+  setTimeout(() => {
+    ajustarPosicionesPaneles();
+  }, 500);
 });
     
 // 👉 Nueva función ordenarGrupo
