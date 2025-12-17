@@ -2704,14 +2704,26 @@ function filtrarSubcategoria(grupo, subgrupo) {
 window.onload = function() {
   const panelSubcategorias = document.getElementById('panelSubcategorias');
   const panelGrupos = document.getElementById('panelGrupos');
-  panelSubcategorias.classList.add('oculta');
-  panelGrupos.classList.add('oculta');
+  
+  // Inicializar ocultos con animación
+  if (panelSubcategorias) {
+    panelSubcategorias.classList.add('oculta');
+  }
+  if (panelGrupos) {
+    panelGrupos.classList.add('oculta');
+  }
 
+  // Carrito toggle
   document.getElementById('toggleCarrito').onclick = function() {
     const carritoDiv = document.getElementById('carrito');
     if (!carritoDiv) return;
     carritoDiv.style.display = carritoDiv.style.display === 'none' ? 'block' : 'none';
   };
+  
+  // Ajustar posiciones después de que todo cargue
+  setTimeout(() => {
+    ajustarPosicionesPaneles();
+  }, 300);
 };
 
 let carrito = [];
