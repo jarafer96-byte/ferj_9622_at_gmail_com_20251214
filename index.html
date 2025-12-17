@@ -2962,21 +2962,35 @@ function mostrarTodos() {
 
   if (!panelGrupos || !panelSub) return;
 
-  // Forzar reflow antes de cambiar clases
+  // Forzar reflow para animaciones CSS
   void panelGrupos.offsetWidth;
+  void panelSub.offsetWidth;
   
-  // Animar la aparición/desaparición
-  panelGrupos.classList.toggle('oculta');
+  console.log("🔄 Mostrar/Ocultar paneles - Estado actual:");
+  console.log("   Panel Grupos oculto?:", panelGrupos.classList.contains('oculta'));
+  console.log("   Panel Sub oculto?:", panelSub.classList.contains('oculta'));
   
-  // Si el panel subcategorías está visible, ocultarlo con animación
-  if (!panelSub.classList.contains('oculta')) {
-    panelSub.classList.add('oculta');
+  // Toggle panel grupos con animación
+  if (panelGrupos.classList.contains('oculta')) {
+    panelGrupos.classList.remove('oculta');
+    console.log("👉 Mostrando panel grupos con animación");
+  } else {
+    panelGrupos.classList.add('oculta');
+    console.log("👉 Ocultando panel grupos con animación");
   }
   
-  // Ajustar posiciones después de la animación
-  setTimeout(ajustarPosicionesPaneles, 10);
+  // Siempre ocultar panel subcategorías si está visible
+  if (!panelSub.classList.contains('oculta')) {
+    panelSub.classList.add('oculta');
+    console.log("👉 Ocultando panel subcategorías");
+  }
+  
+  // Ajustar posiciones después de un pequeño delay para que CSS anime
+  setTimeout(() => {
+    ajustarPosicionesPaneles();
+  }, 50);
 }
-      
+    
 function irAContacto() {
   const contacto = document.getElementById('ubicacion');
   if (contacto) contacto.scrollIntoView({ behavior: 'smooth' });
