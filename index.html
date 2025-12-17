@@ -2883,19 +2883,8 @@ function mostrarSubgrupo(subgrupo, event) {
   const cont = document.getElementById("productos");
   if (cont) {
     console.log("📥 Hijos actuales en #productos después de mostrarSubgrupo:", cont.children.length);
-    console.log("🧩 HTML actual de #productos:", cont.innerHTML.slice(0, 300) + "...");
-    const style = window.getComputedStyle(cont);
-    console.log("👁️ Estilo de #productos:", { display: style.display, visibility: style.visibility });
   }
 }
-window.mostrarSubgrupo = mostrarSubgrupo;
-
-// Extra: log de clicks en botones de subgrupo
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("btn-subgrupo")) {
-    console.log("🟢 Click detectado en botón subgrupo:", e.target.textContent);
-  }
-});
 
 function actualizarPrecioEnCarrito(nombre, nuevoPrecio) {
   let cambio = false;
