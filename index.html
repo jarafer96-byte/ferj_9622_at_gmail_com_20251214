@@ -2160,19 +2160,7 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
     alert("❌ Error al guardar producto: " + err.message);
   }
 });
-// 🔥 FUNCIÓN AUXILIAR PARA LIMPIAR HISTORIAL (opcional)
-function limpiarHistorialPrecios() {
-  localStorage.removeItem('historial_precios');
-  console.log("🧹 Historial de precios limpiado");
-}
 
-// 🔥 INICIALIZAR HISTORIAL SI NO EXISTE
-(function() {
-  if (!localStorage.getItem('historial_precios')) {
-    localStorage.setItem('historial_precios', JSON.stringify({}));
-    console.log("📊 Historial de precios inicializado");
-  }
-})();
     
 function salirAdmin() {
   console.log("🚪 Saliendo de modo admin, limpiando token...");
