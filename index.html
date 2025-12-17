@@ -2657,39 +2657,48 @@ function filtrarSubcategoria(grupo, subgrupo) {
     console.warn("⚠️ No existe #productos en el DOM");
     return;
   }
-  cont.innerHTML = "";
+  
+  // Limpiar con fade out
+  cont.style.opacity = '0.5';
+  cont.style.transition = 'opacity 0.2s ease';
+  
+  setTimeout(() => {
+    cont.innerHTML = "";
 
-  const grupoCanon = String(grupo || "").trim();
-  const subCanon = String(subgrupo || "").trim();
-  console.log("🎯 Grupo canon:", grupoCanon, " | Subgrupo canon:", subCanon || `General_${grupoCanon}`);
+    const grupoCanon = String(grupo || "").trim();
+    const subCanon = String(subgrupo || "").trim();
+    console.log("🎯 Grupo canon:", grupoCanon, " | Subgrupo canon:", subCanon || `General_${grupoCanon}`);
 
-  // Filtrar productos
-  let productosFiltrados;
-  if (subCanon) {
-    productosFiltrados = window.todosLosProductos.filter(p =>
-      String(p.grupo || "").toLowerCase() === grupoCanon.toLowerCase() &&
-      String(p.subgrupo || "").toLowerCase() === subCanon.toLowerCase()
-    );
-  } else {
-    const subgrupoGeneral = `General_${grupoCanon}`;
-    productosFiltrados = window.todosLosProductos.filter(p =>
-      String(p.grupo || "").toLowerCase() === grupoCanon.toLowerCase() &&
-      String(p.subgrupo || "").toLowerCase() === subgrupoGeneral.toLowerCase()
-    );
-  }
+    // Filtrar productos
+    let productosFiltrados;
+    if (subCanon) {
+      productosFiltrados = window.todosLosProductos.filter(p =>
+        String(p.grupo || "").toLowerCase() === grupoCanon.toLowerCase() &&
+        String(p.subgrupo || "").toLowerCase() === subCanon.toLowerCase()
+      );
+    } else {
+      const subgrupoGeneral = `General_${grupoCanon}`;
+      productosFiltrados = window.todosLosProductos.filter(p =>
+        String(p.grupo || "").toLowerCase() === grupoCanon.toLowerCase() &&
+        String(p.subgrupo || "").toLowerCase() === subgrupoGeneral.toLowerCase()
+      );
+    }
 
-  console.log("📦 Productos filtrados:", productosFiltrados.length);
+    console.log("📦 Productos filtrados:", productosFiltrados.length);
 
-  // 🔁 Usar paginación en lugar de volcar todo
-  renderPagina(1, productosFiltrados);
-  renderPaginacion(productosFiltrados);
+    // 🔁 Usar paginación en lugar de volcar todo
+    renderPagina(1, productosFiltrados);
+    renderPaginacion(productosFiltrados);
 
-  console.log("✅ Productos renderizados con paginación en #productos");
-  console.log("📥 Hijos actuales en #productos:", cont.children.length);
+    console.log("✅ Productos renderizados con paginación en #productos");
+    console.log("📥 Hijos actuales en #productos:", cont.children.length);
 
-  window.scrollTo({ top: 0, behavior: 'auto' });
+    // Fade in
+    cont.style.opacity = '1';
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 200);
 }
-window.filtrarSubcategoria = filtrarSubcategoria;
 
 
 window.onload = function() {
