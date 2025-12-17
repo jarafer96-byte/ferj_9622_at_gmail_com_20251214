@@ -3640,12 +3640,16 @@ function ajustarPosicionesPaneles() {
 
   console.log("🔧 ajustando posiciones de paneles...");
 
+  // Forzar reflow para activar transiciones
+  void panelGrupos.offsetWidth;
+  void panelSub.offsetWidth;
+
   if (!panelGrupos.classList.contains('oculta')) {
     const alturaBarra = barraNav ? barraNav.offsetHeight : 0;
     panelGrupos.style.top = alturaBarra + 'px';
     panelGrupos.style.position = 'fixed';
     panelGrupos.style.left = '0';
-    panelGrupos.style.right = '0';
+    panelSub.style.right = '0';
     console.log("📐 Panel grupos → top:", panelGrupos.style.top, "alturaBarra:", alturaBarra);
   }
 
@@ -3665,14 +3669,7 @@ function ajustarPosicionesPaneles() {
     panelSub.style.top = '';
     console.log("📂 Panel subcategorias oculto");
   }
-
-  // Extra: log de estilos calculados
-  const styleGrupos = window.getComputedStyle(panelGrupos);
-  const styleSub = window.getComputedStyle(panelSub);
-  console.log("👁️ Estilo panelGrupos:", { display: styleGrupos.display, top: styleGrupos.top });
-  console.log("👁️ Estilo panelSub:", { display: styleSub.display, top: styleSub.top });
 }
-
 ////////////////////////////////////////////////////
 document.addEventListener("DOMContentLoaded", () => {
   // Ajustar posiciones al cargar y al redimensionar
