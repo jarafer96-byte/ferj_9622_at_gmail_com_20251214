@@ -1886,13 +1886,33 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
   }
 
   try {
-    // 🔥 PASO 0: Obtener precio anterior ANTES de hacer cualquier cosa (para localStorage)
+    // 🔥 NUEVA LÓGICA: Obtener precio anterior para OFERTAS
     let precioViejo = 0;
+    let precioAnteriorParaEnviar = 0; // 🔥 NUEVO: Variable para enviar al backend
+    
     if (window.productoEditandoId) {
       const productoExistente = window.todosLosProductos?.find(p => p.id_base === window.productoEditandoId);
       if (productoExistente) {
         precioViejo = parseFloat(productoExistente.precio) || 0;
         console.log(`💰 Precio anterior encontrado: $${precioViejo}`);
+        
+        // 🔥 NUEVO: Determinar si debemos guardar precio_anterior
+        // Solo si el precio VIEJO es MAYOR que el NUEVO (es una oferta)
+        const precioNuevo = parseFloat(document.getElementById("precioProd").value);
+        
+        if (!isNaN(precioNuevo) && precioViejo > precioNuevo) {
+          // ¡Es una oferta! Guardar precio anterior
+          precioAnteriorParaEnviar = precioViejo;
+          console.log(`🔥 OFERTA DETECTADA: $${precioViejo} → $${precioNuevo} (Ahorro: $${(precioViejo - precioNuevo).toFixed(2)})`);
+        } else if (precioViejo < precioNuevo) {
+          // El precio subió, NO guardar precio anterior
+          precioAnteriorParaEnviar = 0;
+          console.log(`📈 Precio aumentó: $${precioViejo} → $${precioNuevo} (NO es oferta)`);
+        } else {
+          // Mismo precio o precio nuevo inválido
+          precioAnteriorParaEnviar = 0;
+          console.log(`📊 Precio sin cambios: $${precioViejo}`);
+        }
       }
     }
 
@@ -2026,19 +2046,20 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
 
     console.log("📦 Stock procesado:", stockPorTalle);
 
-    // 🔥 5. GUARDAR PRECIO ANTERIOR EN LOCALSTORAGE (SOLO SI ES OFERTA)
+    // 🔥 5. MODIFICADO: Guardar en localStorage SOLO para referencia local (opcional)
+    // Esto es ahora redundante pero lo mantenemos por compatibilidad
     if (window.productoEditandoId && precioViejo > precioNuevo) {
       try {
         const historial = JSON.parse(localStorage.getItem('historial_precios') || '{}');
         historial[window.productoEditandoId] = precioViejo;
         localStorage.setItem('historial_precios', JSON.stringify(historial));
-        console.log(`💰 Precio anterior guardado en localStorage: $${precioViejo} -> $${precioNuevo} (OFERTA)`);
+        console.log(`💰 Precio anterior guardado en localStorage: $${precioViejo} (backup)`);
       } catch(e) {
         console.log("⚠️ Error guardando en localStorage:", e);
       }
     }
 
-    // 6. Crear objeto producto
+    // 6. 🔥 NUEVO: Crear objeto producto CON precio_anterior
     const producto = {
       nombre: nombre,
       precio: precioNuevo,
@@ -2048,8 +2069,9 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       subgrupo: subgrupo,
       stock_por_talle: stockPorTalle,
       imagen_url: foto_url,
-      fotos_adicionales: fotosAdicionalesUrls
-      // 🔥 NOTA: Ya NO incluimos precio_anterior aquí
+      fotos_adicionales: fotosAdicionalesUrls,
+      // 🔥 NUEVO: Incluir precio_anterior solo si es una oferta válida
+      precio_anterior: precioAnteriorParaEnviar
     };
 
     // 7. Preparar payload
@@ -2064,8 +2086,11 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
     if (esEdicion) {
       payload.producto.id_base = window.productoEditandoId;
       console.log("🔄 Modo EDICIÓN para ID:", window.productoEditandoId);
+      console.log(`💰 precio_anterior a enviar: $${precioAnteriorParaEnviar} ${precioAnteriorParaEnviar > 0 ? '(OFERTA)' : '(sin oferta)'}`);
     } else {
       console.log("➕ Modo CREACIÓN de nuevo producto");
+      // Para productos nuevos, precio_anterior siempre será 0
+      producto.precio_anterior = 0;
     }
 
     console.log("📤 Payload para backend:", JSON.stringify(payload, null, 2));
@@ -2093,12 +2118,19 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
         `✅ Producto actualizado correctamente (${fotosAdicionalesUrls.length} fotos adicionales)` : 
         `✅ Producto creado correctamente (${fotosAdicionalesUrls.length} fotos adicionales)`;
       
-      // 🔥 MOSTRAR MENSAJE DE OFERTA SI APLICA
-      if (precioViejo > precioNuevo) {
-        const descuento = Math.round(((precioViejo - precioNuevo) / precioViejo) * 100);
+      // 🔥 NUEVO: Mostrar mensaje de oferta basado en precio_anterior del backend
+      const tieneOferta = data.resultado?.tiene_oferta || precioAnteriorParaEnviar > 0;
+      const precioAnteriorBackend = data.resultado?.precio_anterior || precioAnteriorParaEnviar;
+      
+      if (tieneOferta && precioAnteriorBackend > 0) {
+        const descuento = Math.round(((precioAnteriorBackend - precioNuevo) / precioAnteriorBackend) * 100);
         alert(`${mensaje}\n🔥 ¡OFERTA DETECTADA! -${descuento}% de descuento`);
+        
+        // Mostrar en consola para debug
+        console.log(`🎯 OFERTA CONFIRMADA: Antes $${precioAnteriorBackend} → Ahora $${precioNuevo} (-${descuento}%)`);
       } else {
         alert(mensaje);
+        console.log(`📊 Producto guardado sin oferta: $${precioNuevo}`);
       }
       
       // 9. Limpiar formulario
