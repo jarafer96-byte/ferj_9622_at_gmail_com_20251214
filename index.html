@@ -496,11 +496,46 @@ document.getElementById("tallesProd").addEventListener("input", function() {
     console.log("📭 Sin talles, mostrando stock simple");
   }
 });
+function crearLluviaCondicional() {
+  // Detectar si es móvil
+  const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Detectar conexión lenta (bajo consumo)
+  const esConexionLenta = () => {
+    if (navigator.connection) {
+      const connection = navigator.connection;
+      return connection.saveData || 
+             connection.effectiveType === 'slow-2g' || 
+             connection.effectiveType === '2g' ||
+             connection.downlink < 1; // Menos de 1 Mbps
+    }
+    return false;
+  };
+  
+  // Detectar preferencia de reducción de movimiento
+  const prefiereSinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  // Condiciones para NO mostrar lluvia
+  if (esMovil || esConexionLenta() || prefiereSinMovimiento) {
+    console.log("🌧️ Lluvia desactivada - Razón:", 
+      esMovil ? "Móvil" : 
+      esConexionLenta() ? "Conexión lenta" : 
+      "Preferencia sin movimiento");
+    return;
+  }
+  
+  // Si pasa todas las condiciones, crear lluvia
+  crearLluviaVisible();
+}
+
 function crearLluviaVisible() {
   const container = document.createElement('div');
   container.className = 'rain-visible';
   
-  for (let i = 0; i < 100; i++) {
+  // Reducir cantidad de gotas en móviles si aún así se muestra
+  const cantidadGotas = window.innerWidth <= 768 ? 50 : 100;
+  
+  for (let i = 0; i < cantidadGotas; i++) {
     const drop = document.createElement('div');
     drop.className = 'rain-drop-strong';
     drop.style.left = `${Math.random() * 100}%`;
@@ -510,11 +545,13 @@ function crearLluviaVisible() {
   }
   
   document.body.appendChild(container);
-  console.log("🌧️🌧️🌧️ LLUVIA VISIBLE ACTIVADA 🌧️🌧️🌧️");
+  console.log("🌧️ Lluvia visible activada con", cantidadGotas, "gotas");
 }
 
-// Usar esta en lugar de crearLluvia() si no se ve nada
-crearLluviaVisible();    
+// Llamar en lugar de crearLluviaVisible()
+crearLluviaCondicional();  
+
+    
 function renderizarProductos(productos) {
   console.log("🎨 Renderizando productos:", productos.length);
   
