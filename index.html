@@ -2088,7 +2088,7 @@ function mostrarGrupo(nombre, event, auto = false) {
     console.log("➕ Botón subgrupo creado:", sub);
   });
   renderPagina(1, productosGrupo);
-
+  renderPaginacion(productosGrupo);
   if (subcategorias.length > 0) {
     if (!auto) {
       void panel.offsetWidth;
