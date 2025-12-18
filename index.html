@@ -54,8 +54,6 @@ body.container.py-5.modo-oscuro::before {
   border-radius: 40px;
   z-index: -1;
 }
-
-/* Mantén el box-shadow en el body */
 body.container.py-5.modo-oscuro {
   box-shadow: 
     0 50px 120px rgba(0, 0, 0, 0.8),
@@ -355,15 +353,13 @@ h1, h2, h3, .btn, .card { font-family: 'Raleway', sans-serif; }
   
   <script>
 const configWhatsApp = "https://wa.me/5492975158178";
-// Opción B: leerlo de la URL si lo pasás como query param
 const email = "ferj.9622@gmail.com";
-const URL_BACKEND = "https://mpagina.onrender.com"; // Tu URL central
+const URL_BACKEND = "https://mpagina.onrender.com"; 
 
 if (window.email) {
     email = window.email;
 }
-    
-  // Mostrar/ocultar botón volver arriba
+
   window.addEventListener('scroll', () => {
     const btn = document.getElementById('volverArriba');
     btn.style.display = window.scrollY > 300 ? 'block' : 'none';
@@ -374,14 +370,11 @@ if (window.email) {
   document.getElementById('volverArriba').onclick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-    
 
-// Mostrar/ocultar botón login al final de página
 window.addEventListener('scroll', () => {
   const btn = document.getElementById('loginToggleBtn');
   if (!btn) return;
   
-  // 🔥 NUEVO: No mostrar si ya estamos en modo admin
   if (window.modoAdmin) {
     btn.style.display = 'none';
     return;
@@ -408,8 +401,6 @@ document.getElementById("tallesProd").addEventListener("input", function() {
     
     const stockPorTalleInput = document.getElementById("stockPorTalle");
     if (stockPorTalleInput) {
-      // 🔥 NUEVO: Solo actualizar si estamos CREANDO un producto nuevo
-      // o si el campo de stock está vacío
       const estaEditando = !!window.productoEditandoId;
       const stockEstaVacio = !stockPorTalleInput.value.trim();
       
@@ -419,24 +410,18 @@ document.getElementById("tallesProd").addEventListener("input", function() {
         valorActual: stockPorTalleInput.value
       });
       
-      // Solo actualizar automáticamente si:
-      // 1. NO estamos editando un producto (creando nuevo) Y el campo está vacío
-      // 2. O si estamos editando PERO el usuario acaba de borrar un talle
       if ((!estaEditando && stockEstaVacio) || stockEstaVacio) {
-        // Crear stock inicial desde cero
+
         const nuevoStock = talles.map(t => `${t}:0`).join(", ");
         stockPorTalleInput.value = nuevoStock;
         console.log("🔄 Stock por talle inicializado:", nuevoStock);
       } 
-      // Si estamos editando Y ya hay stock definido, mantenerlo
       else if (estaEditando && !stockEstaVacio) {
         console.log("📌 Manteniendo stock existente durante edición");
-        // No hacer nada - mantener el stock que ya estaba
       }
-      // Si estamos creando nuevo pero ya hay algo escrito, actualizar manteniendo valores
+
       else if (!estaEditando && !stockEstaVacio) {
         try {
-          // Parsear stock existente
           const stockExistente = {};
           stockPorTalleInput.value.split(",").forEach(item => {
             const parts = item.split(":").map(s => s.trim());
@@ -446,23 +431,20 @@ document.getElementById("tallesProd").addEventListener("input", function() {
               stockExistente[talle] = stock;
             }
           });
-          
-          // Crear nuevo stock manteniendo valores existentes para talles que siguen
+
           const nuevoStock = talles.map(talle => {
             if (stockExistente[talle] !== undefined) {
               return `${talle}:${stockExistente[talle]}`;
             } else {
-              return `${talle}:0`; // Nuevo talle, stock en 0
+              return `${talle}:0`; 
             }
           }).join(", ");
-          
-          // También eliminar talles que ya no están en la lista
+
           stockPorTalleInput.value = nuevoStock;
           console.log("🔄 Stock por talle actualizado manteniendo valores:", nuevoStock);
           
         } catch (error) {
           console.error("❌ Error procesando stock:", error);
-          // Si hay error, crear stock desde cero
           const nuevoStock = talles.map(t => `${t}:0`).join(", ");
           stockPorTalleInput.value = nuevoStock;
         }
@@ -484,13 +466,12 @@ function renderizarProductos(productos) {
     return;
   }
   
-  cont.innerHTML = ""; // Limpiar contenedor
+  cont.innerHTML = ""; 
   
   productos.forEach(p => {
     const card = renderProducto(p);
     cont.appendChild(card);
-    
-    // Animación
+
     setTimeout(() => {
       card.classList.remove("fade-reorder");
       card.classList.add("show");
@@ -517,21 +498,17 @@ function cargarProductoEnFormulario(producto) {
     fotos_adicionales_count: producto.fotos_adicionales ? producto.fotos_adicionales.length : 0
   });
   
-  // Mostrar formulario admin
   const adminCard = document.getElementById("adminCard");
   adminCard.classList.remove("d-none");
   
-  // Activar modo edición
   toggleModoEdicion(true);
   
-  // Llenar campos con datos del producto
   document.getElementById("nombreProd").value = producto.nombre || "";
   document.getElementById("precioProd").value = producto.precio || "";
   document.getElementById("descripcionProd").value = producto.descripcion || "";
   document.getElementById("grupoProd").value = producto.grupo || "";
   document.getElementById("subgrupoProd").value = producto.subgrupo || "";
   
-  // 1. Obtener talles del producto - CON MÁS DEBUG
   let tallesArray = [];
   console.log("🔍 Analizando talles del producto...");
   
@@ -550,13 +527,11 @@ function cargarProductoEnFormulario(producto) {
   
   console.log("📋 Talles finales:", tallesArray);
   
-  // 2. Determinar qué campo de stock mostrar
   if (tallesArray.length > 0) {
     console.log("🔄 Producto CON talles, mostrando stock por talle");
     document.getElementById("stockPorTalleContainer").style.display = "block";
     document.getElementById("stockSimple").style.display = "none";
     
-    // 🔥 CORRECCIÓN MEJORADA con más logs
     let stockPorTalleStr = "";
     
     if (producto.stock_por_talle && Object.keys(producto.stock_por_talle).length > 0) {
@@ -567,19 +542,17 @@ function cargarProductoEnFormulario(producto) {
       let tallesFiltrados = 0;
       let tallesIgnorados = [];
       
-      // Solo incluir stock para los talles que existen
       tallesArray.forEach(talle => {
         if (stockPorTalle[talle] !== undefined) {
           stockFiltrado[talle] = stockPorTalle[talle];
           tallesFiltrados++;
           console.log(`✅ Talle "${talle}" encontrado en stock: ${stockPorTalle[talle]}`);
         } else {
-          stockFiltrado[talle] = 0; // Talle nuevo, stock en 0
+          stockFiltrado[talle] = 0; 
           console.log(`⚠️ Talle "${talle}" NO encontrado en stock, asignando 0`);
         }
       });
-      
-      // Verificar si hay talles en stock que ya no están en tallesArray
+
       Object.keys(stockPorTalle).forEach(talle => {
         if (!tallesArray.includes(talle) && talle !== "unico") {
           tallesIgnorados.push(`${talle}:${stockPorTalle[talle]}`);
@@ -591,7 +564,6 @@ function cargarProductoEnFormulario(producto) {
         console.log("📌 Talles ignorados del stock:", tallesIgnorados.join(", "));
       }
       
-      // Crear string para el input
       stockPorTalleStr = Object.entries(stockFiltrado)
         .map(([talle, stock]) => `${talle}:${stock}`)
         .join(", ");
@@ -600,7 +572,6 @@ function cargarProductoEnFormulario(producto) {
       console.log("📝 String generado:", stockPorTalleStr);
       
     } else {
-      // Si no hay stock definido, crear uno inicial
       stockPorTalleStr = tallesArray.map(t => `${t}:0`).join(", ");
       console.log("➕ Creando stock inicial:", stockPorTalleStr);
     }
@@ -612,7 +583,6 @@ function cargarProductoEnFormulario(producto) {
     document.getElementById("stockPorTalleContainer").style.display = "none";
     document.getElementById("stockSimple").style.display = "block";
     
-    // Determinar stock general
     let stockGeneral = 0;
     if (producto.stock_por_talle && producto.stock_por_talle["unico"] !== undefined) {
       stockGeneral = producto.stock_por_talle["unico"];
@@ -627,7 +597,6 @@ function cargarProductoEnFormulario(producto) {
     document.getElementById("stockGeneral").value = stockGeneral;
   }
   
-  // 3. Imagen principal
   if (producto.imagen_url) {
     const previewFoto = document.getElementById("previewFoto");
     previewFoto.src = producto.imagen_url;
@@ -640,12 +609,10 @@ function cargarProductoEnFormulario(producto) {
     console.log("🖼️ Sin imagen principal");
   }
   
-  // 🔥 4. NUEVO: Cargar fotos adicionales
   const previewDiv = document.getElementById("previewFotosAdicionales");
   if (previewDiv) {
     previewDiv.innerHTML = '';
     
-    // Guardar las fotos adicionales existentes en variable global
     window.fotosAdicionalesExistentes = producto.fotos_adicionales || [];
     
     if (window.fotosAdicionalesExistentes.length > 0) {
@@ -662,8 +629,7 @@ function cargarProductoEnFormulario(producto) {
         img.style.cursor = 'pointer';
         img.style.border = '2px solid #ccc';
         img.title = `Foto adicional ${index + 1}`;
-        
-        // Agregar botón para eliminar esta foto específica
+
         const container = document.createElement("div");
         container.style.position = 'relative';
         container.style.display = 'inline-block';
@@ -687,10 +653,8 @@ function cargarProductoEnFormulario(producto) {
         btnEliminar.onclick = (e) => {
           e.stopPropagation();
           if (confirm(`¿Eliminar foto adicional ${index + 1}?`)) {
-            // Eliminar de la lista de fotos existentes
             window.fotosAdicionalesExistentes = window.fotosAdicionalesExistentes.filter((_, i) => i !== index);
-            // Actualizar la vista
-            cargarProductoEnFormulario(producto); // Recargar
+            cargarProductoEnFormulario(producto); 
             console.log(`🗑️ Foto adicional ${index + 1} eliminada`);
           }
         };
@@ -708,12 +672,10 @@ function cargarProductoEnFormulario(producto) {
   } else {
     console.log("⚠️ No se encontró el div previewFotosAdicionales");
   }
-  
-  // 5. Guardar ID del producto que estamos editando
+
   window.productoEditandoId = producto.id_base;
   console.log("🔑 ID del producto en edición:", window.productoEditandoId);
-  
-  // 6. Scroll al formulario
+
   adminCard.scrollIntoView({ behavior: 'smooth' });
   
   console.log("✅ Producto cargado correctamente en formulario");
@@ -725,7 +687,6 @@ function toggleModoEdicion(editando) {
   const titulo = document.getElementById("tituloFormularioAdmin") || document.createElement("h5");
   
   if (editando) {
-    // 🔥 NUEVO: Si hay un elemento para título, actualizarlo
     if (titulo && titulo.id === "tituloFormularioAdmin") {
       titulo.textContent = "✏️ Editando Producto";
       titulo.classList.add("text-warning");
@@ -737,7 +698,6 @@ function toggleModoEdicion(editando) {
     btnConfirmar.classList.add("btn-warning");
     console.log("🔧 Modo edición activado");
   } else {
-    // 🔥 NUEVO: Restaurar título
     if (titulo && titulo.id === "tituloFormularioAdmin") {
       titulo.textContent = "➕ Nuevo Producto";
       titulo.classList.remove("text-warning");
@@ -753,7 +713,6 @@ function toggleModoEdicion(editando) {
 function resetearFormularioAdmin() {
   console.log("🔄 Reseteando formulario admin...");
   
-  // 1. Limpiar todos los campos
   document.getElementById("nombreProd").value = "";
   document.getElementById("precioProd").value = "";
   document.getElementById("descripcionProd").value = "";
@@ -762,19 +721,14 @@ function resetearFormularioAdmin() {
   document.getElementById("stockPorTalle").value = "";
   document.getElementById("grupoProd").value = "";
   document.getElementById("subgrupoProd").value = "";
-  
-  // 2. Resetear visibilidad
   document.getElementById("stockPorTalleContainer").style.display = "none";
   document.getElementById("stockSimple").style.display = "block";
-  
-  // 3. Resetear foto principal
   document.getElementById("previewFoto").src = "";
   document.getElementById("previewFoto").classList.add("d-none");
   document.getElementById("btnQuitarFoto").classList.add("d-none");
   document.getElementById("inputFoto").value = "";
   window.fotoOptimizada = null;
   
-  // 🔥 4. NUEVO: Resetear fotos adicionales
   const previewDiv = document.getElementById("previewFotosAdicionales");
   if (previewDiv) {
     previewDiv.innerHTML = '';
@@ -787,11 +741,9 @@ function resetearFormularioAdmin() {
     console.log("✅ Input de fotos adicionales limpiado");
   }
   
-  // 🔥 5. Limpiar variables temporales de fotos adicionales
   window.fotosAdicionalesExistentes = null;
   console.log("✅ Variables de fotos adicionales limpiadas");
   
-  // 6. Cambiar botón a modo creación
   const btnConfirmar = document.getElementById("btnConfirmarProd");
   if (btnConfirmar) {
     btnConfirmar.innerHTML = "✅ Confirmar";
@@ -800,18 +752,15 @@ function resetearFormularioAdmin() {
     console.log("✅ Botón cambiado a modo creación");
   }
   
-  // 7. Ocultar botón cancelar
   const btnCancelar = document.getElementById("btnCancelarEdicion");
   if (btnCancelar) {
     btnCancelar.style.display = "none";
     console.log("✅ Botón cancelar ocultado");
   }
   
-  // 8. Limpiar ID de edición
   window.productoEditandoId = null;
   console.log("✅ ID de edición limpiado");
   
-  // 🔥 9. NUEVO: Desactivar modo edición
   if (typeof toggleModoEdicion === "function") {
     toggleModoEdicion(false);
   }
@@ -829,8 +778,7 @@ function actualizarStockPorTalle(idProducto, talleSeleccionado) {
     console.warn("⚠️ Elementos no encontrados");
     return;
   }
-  
-  // 🔥 Obtener stock del talle seleccionado
+
   let stockDisponible = 0;
   const stockPorTalle = window[`stock_por_talle_${idProducto}`];
   
@@ -841,8 +789,7 @@ function actualizarStockPorTalle(idProducto, talleSeleccionado) {
     console.warn(`⚠️ Talle ${talleSeleccionado} no encontrado en stock_por_talle`);
     stockDisponible = 0;
   }
-  
-  // Actualizar UI
+
   stockSpan.textContent = stockDisponible > 0 ? stockDisponible : "Sin stock";
   
   if (stockDisponible > 0) {
@@ -870,7 +817,6 @@ function actualizarStockPorTalle(idProducto, talleSeleccionado) {
     agregarBtn.textContent = "Sin stock";
   }
 }
-// 🔥 EFECTO PARALLAX CON GIROSCOPIO - AGREGAR AL FINAL DEL SCRIPT
 document.addEventListener('DOMContentLoaded', function() {
   // Esperar a que todo cargue
   setTimeout(function() {
@@ -879,98 +825,84 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log("🎮 Inicializando efecto parallax...");
     
-    let intensity = 0.03; // Intensidad del efecto (0.01 = suave, 0.1 = fuerte)
+    let intensity = 0.03; 
     let lastX = 0;
     let lastY = 0;
-    
-    // 1. Efecto con giroscopio (dispositivos móviles)
+
     if (window.DeviceOrientationEvent) {
       console.log("📱 Usando giroscopio para efecto parallax");
       
       window.addEventListener('deviceorientation', function(event) {
-        const gamma = event.gamma || 0; // Inclinación izquierda-derecha (-90 a 90)
-        const beta = event.beta || 0;   // Inclinación adelante-atrás (-180 a 180)
-        
-        // Convertir a valores entre -1 y 1
+        const gamma = event.gamma || 0; /
+        const beta = event.beta || 0;  
         const moveX = (gamma / 90) * intensity * 100;
         const moveY = ((beta - 90) / 90) * intensity * 100;
         
-        // Suavizar movimiento
         lastX = moveX * 0.8 + lastX * 0.2;
         lastY = moveY * 0.8 + lastY * 0.2;
         
         fondo.style.transform = `translate(${lastX}px, ${lastY}px)`;
       });
     }
-    
-    // 2. Efecto con mouse (computadoras)
+
     else {
       console.log("🖱️ Usando mouse para efecto parallax");
       
       document.addEventListener('mousemove', function(e) {
-        // Calcular posición del mouse (0 a 1)
         const mouseX = e.clientX / window.innerWidth;
         const mouseY = e.clientY / window.innerHeight;
-        
-        // Mover fondo en dirección opuesta
         const moveX = (mouseX - 0.5) * 30 * intensity;
         const moveY = (mouseY - 0.5) * 30 * intensity;
         
-        // Suavizar
         lastX = moveX * 0.1 + lastX * 0.9;
         lastY = moveY * 0.1 + lastY * 0.9;
         
         fondo.style.transform = `translate(${lastX}px, ${lastY}px)`;
       });
     }
-    
-    // 3. Efecto con scroll (parallax clásico)
+
     window.addEventListener('scroll', function() {
       const scrolled = window.pageYOffset;
-      const moveY = scrolled * -0.3; // 30% de velocidad
+      const moveY = scrolled * -0.3; 
       
-      // Combinar con otros efectos si no hay giroscopio
       if (!window.DeviceOrientationEvent) {
         fondo.style.transform = `translate(0px, ${lastY + moveY}px)`;
       }
     });
     
-    // 4. Mostrar fondo después de cargar
     setTimeout(function() {
       fondo.style.opacity = '1';
       console.log("✅ Efecto parallax activado");
     }, 800);
     
-  }, 1000); // Esperar 1 segundo
+  }, 1000); 
 });
 
-// 🔥 FUNCIÓN PARA AJUSTAR INTENSIDAD (opcional - para debug)
 function ajustarIntensidadParallax(nuevaIntensidad) {
   intensity = nuevaIntensidad;
   console.log(`🎚️ Intensidad parallax ajustada a: ${intensidad}`);
 }    
-/////////////////////////////////
+
 function habilitarScrollHorizontal(selector) {
   const panel = document.querySelector(selector);
   if (!panel) return;
 
-  // 1️⃣ Scroll horizontal con la rueda del mouse (animado)
+
   panel.addEventListener('wheel', (e) => {
-    e.preventDefault(); // evita scroll vertical
+    e.preventDefault(); 
     panel.scrollBy({
       left: e.deltaY,
-      behavior: 'smooth' // animación suave
+      behavior: 'smooth' 
     });
   });
 
-  // 2️⃣ Scroll horizontal arrastrando con el mouse
   let isDown = false;
   let startX;
   let scrollLeft;
 
   panel.addEventListener('mousedown', (e) => {
     isDown = true;
-    panel.classList.add('active'); // opcional: estilo visual
+    panel.classList.add('active'); 
     startX = e.pageX - panel.offsetLeft;
     scrollLeft = panel.scrollLeft;
   });
@@ -989,21 +921,16 @@ function habilitarScrollHorizontal(selector) {
     if (!isDown) return;
     e.preventDefault();
     const x = e.pageX - panel.offsetLeft;
-    const walk = (x - startX); // cantidad de movimiento
+    const walk = (x - startX); 
     panel.scrollLeft = scrollLeft - walk;
   });
 }
-
-// Activar en ambos paneles
 habilitarScrollHorizontal('.panel-grupos');
 habilitarScrollHorizontal('.panel-subcategorias');
 
-////////////////////////////////////////////////////     
-// Configuración de paginación
 const itemsPorPagina = 12;
 let totalPaginas = 0;
 
-// 👉 Flag de admin (puede venir de tu token backend)
 const modoAdmin = window.tokenAdminEmail ? true : false;
 
 if (modoAdmin) {
@@ -1014,39 +941,33 @@ function openModal(src) {
   const modal = document.getElementById("imgModal");
   document.getElementById("modal-img").src = src;
   modal.style.display = "flex";
-  setTimeout(() => modal.classList.add("show"), 10); // activa animación
+  setTimeout(() => modal.classList.add("show"), 10); 
 }
     
 function closeModal() {
   const modal = document.getElementById("imgModal");
   modal.classList.remove("show");
-  setTimeout(() => modal.style.display = "none", 300); // espera animación
+  setTimeout(() => modal.style.display = "none", 300); 
 }
-// ========== FUNCIONES NUEVAS PARA EL CARRITO ==========
 
-// 1. Mostrar formulario de datos del cliente (NUEVA)
 function mostrarFormulario() {
     console.log("📝 Mostrando formulario de datos del cliente");
     
-    // Mostrar el formulario de datos del cliente
     const datosCliente = document.getElementById('datosCliente');
     if (datosCliente) {
         datosCliente.style.display = 'block';
     }
     
-    // Ocultar el botón "Continuar con la compra"
     const btnContinuar = document.getElementById('btnContinuar');
     if (btnContinuar) {
         btnContinuar.style.display = 'none';
     }
     
-    // Mostrar el botón "Pagar con Mercado Pago"
     const btnPagarFinal = document.getElementById('btnPagarFinal');
     if (btnPagarFinal) {
         btnPagarFinal.style.display = 'block';
     }
     
-    // Hacer scroll al formulario
     setTimeout(() => {
         const carrito = document.getElementById('carrito');
         if (carrito) {
@@ -1054,7 +975,7 @@ function mostrarFormulario() {
         }
     }, 100);
 }
-// Función para girar las cards
+
 function girarCard(elemento) {
   const cardContenedor = elemento.closest('.card-contenedor');
   if (cardContenedor) {
@@ -1062,22 +983,15 @@ function girarCard(elemento) {
     cardContenedor.style.transform = estaGirada ? 'rotateY(0deg)' : 'rotateY(180deg)';
   }
 }
-
-// También girar al pasar mouse (opcional)
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.card-giratoria').forEach(card => {
     card.addEventListener('mouseenter', () => {
-      // Opcional: gira automáticamente al pasar mouse
-      // card.querySelector('.card-contenedor').style.transform = 'rotateY(180deg)';
     });
     
     card.addEventListener('mouseleave', () => {
-      // Opcional: vuelve al frente al sacar mouse  
-      // card.querySelector('.card-contenedor').style.transform = 'rotateY(0deg)';
     });
   });
 });
-// 2. Ocultar formulario de datos del cliente (NUEVA)
 function ocultarFormulario() {
     const datosCliente = document.getElementById('datosCliente');
     if (datosCliente) {
@@ -1094,18 +1008,14 @@ function ocultarFormulario() {
         btnPagarFinal.style.display = 'none';
     }
 }
-
-// 3. Procesar pago completo (NUEVA)
 async function pagarTodoJunto() {
     console.log("🛒 Iniciando proceso de pago...");
-    
-    // 1. Validar que hay productos en el carrito
+
     if (carrito.length === 0) {
         alert("❌ El carrito está vacío");
         return;
     }
-    
-    // 2. Obtener datos del formulario
+
     const nombreInput = document.querySelector('input[name="nombre"]');
     const apellidoInput = document.querySelector('input[name="apellido"]');
     const emailInput = document.querySelector('input[name="email"]');
@@ -1125,18 +1035,15 @@ async function pagarTodoJunto() {
         alert("❌ Nombre, apellido y email son obligatorios");
         return;
     }
-    
-    // 3. Validar email
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailCliente)) {
         alert("❌ Por favor ingresa un email válido");
         return;
     }
     
-    // 4. Generar un ID único para esta orden
     const orden_id = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     
-    // 5. Función para convertir precio a número
     function convertirPrecio(precio) {
         if (typeof precio === 'number') {
             return precio;
@@ -1149,35 +1056,30 @@ async function pagarTodoJunto() {
         }
         return 0;
     }
-    
-    // 6. Función para convertir cantidad a número
+
     function convertirCantidad(cantidad) {
         const num = parseInt(cantidad);
         return isNaN(num) || num < 1 ? 1 : num;
     }
-    
-    // 7. Preparar el payload para el backend
-    const itemsMP = []; // Para Mercado Pago
-    const itemsCarrito = []; // Para Firestore
+
+    const itemsMP = []; 
+    const itemsCarrito = []; 
     
     let totalCalculado = 0;
     
     carrito.forEach(item => {
-        // Convertir precios y cantidades
         const precio = convertirPrecio(item.precio);
         const cantidad = convertirCantidad(item.cantidad);
         const subtotal = precio * cantidad;
         totalCalculado += subtotal;
-        
-        // Item para Mercado Pago
+  
         itemsMP.push({
             title: item.nombre + (item.talle ? ` (${item.talle})` : ""),
             quantity: cantidad,
             unit_price: precio,
             currency_id: "ARS"
         });
-        
-        // Item para Firestore (formato completo)
+
         itemsCarrito.push({
             nombre: item.nombre,
             precio: precio,
@@ -1192,8 +1094,8 @@ async function pagarTodoJunto() {
     
     const payload = {
         email_vendedor: email,
-        carrito: itemsCarrito,  // Enviar carrito completo con precios convertidos
-        items_mp: itemsMP,      // Enviar también items formateados para MP
+        carrito: itemsCarrito,  
+        items_mp: itemsMP,     
         total: totalCalculado,
         cliente_nombre: `${nombre} ${apellido}`.trim(),
         cliente_email: emailCliente,
@@ -1205,21 +1107,18 @@ async function pagarTodoJunto() {
     console.log("📦 Payload para el pago:", payload);
     console.log("💰 Total calculado:", totalCalculado);
     console.log("🛒 Items procesados:", itemsCarrito.length);
-    
-    // Debug: mostrar precios convertidos
+
     itemsCarrito.forEach((item, idx) => {
         console.log(`  ${idx+1}. ${item.nombre}: $${item.precio} x ${item.cantidad} = $${item.subtotal}`);
     });
     
     try {
-        // Mostrar indicador de carga
         const btnPagarFinal = document.getElementById('btnPagarFinal');
         if (btnPagarFinal) {
             btnPagarFinal.disabled = true;
             btnPagarFinal.textContent = 'Procesando...';
         }
         
-        // 8. Enviar al backend para crear la preferencia de pago
         const response = await fetch(`${URL_BACKEND}/pagar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1233,12 +1132,10 @@ async function pagarTodoJunto() {
         
         const data = await response.json();
         console.log("✅ Respuesta del backend:", data);
-        
-        // 9. Manejar la respuesta
+
         if (data.error) {
             alert("❌ Error: " + data.error);
         } else if (data.init_point) {
-            // Guardar el ID de la orden en localStorage para referencia
             localStorage.setItem('ultima_orden_id', orden_id);
             localStorage.setItem('ultima_orden_data', JSON.stringify({
                 fecha: new Date().toISOString(),
@@ -1248,11 +1145,9 @@ async function pagarTodoJunto() {
                 email: emailCliente
             }));
             
-            // Redirigir a Mercado Pago
             console.log("➡️ Redirigiendo a Mercado Pago...");
             window.location.href = data.init_point;
         } else if (data.preference_id && window.mp) {
-            // Usar SDK de Mercado Pago si está disponible
             localStorage.setItem('ultima_orden_id', orden_id);
             
             window.mp.checkout({
@@ -1268,7 +1163,6 @@ async function pagarTodoJunto() {
         console.error("💥 Error al procesar el pago:", error);
         alert("❌ Error al procesar el pago: " + error.message);
     } finally {
-        // Restaurar botón
         const btnPagarFinal = document.getElementById('btnPagarFinal');
         if (btnPagarFinal) {
             btnPagarFinal.disabled = false;
@@ -1276,16 +1170,12 @@ async function pagarTodoJunto() {
         }
     }
 }
-
-// 4. Modificar la función vaciarCarrito existente para que también oculte el formulario
-// Reemplaza tu función vaciarCarrito existente con esta:
 function vaciarCarrito() {
     carrito = [];
     actualizarCarrito();
-    ocultarFormulario(); // Esto es lo nuevo que agregamos
+    ocultarFormulario(); 
 }
     
-// 👉 Mostrar/ocultar botones eliminar según modo admin
 function toggleModoAdmin(activo) {
   document.querySelectorAll(".btnEliminarCard").forEach(btn => {
     if (activo) {
@@ -1299,10 +1189,8 @@ function toggleModoAdmin(activo) {
 function abrirConfigMercadoPago() {
     console.log("⚙️ Redirigiendo a configuración de Mercado Pago...");
     
-    // 👉 Obtener la URL actual del vendedor (SU página)
     const urlRetorno = window.location.href;
     
-    // 👉 Usamos URL_BACKEND para que siempre apunte al backend correcto
     const configUrl = `${URL_BACKEND}/conectar_mp?email=${encodeURIComponent(email)}&url_retorno=${encodeURIComponent(urlRetorno)}`;
     
     console.log("🔗 Redirigiendo a:", configUrl);
@@ -1319,7 +1207,7 @@ async function eliminarProducto(id_base) {
     const resp = await fetch("https://mpagina.onrender.com/eliminar-producto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_base, email }) // 👈 usa la variable global
+      body: JSON.stringify({ id_base, email }) 
     });
 
     console.log("[ELIMINAR_PRODUCTO] 📥 Status HTTP:", resp.status);
@@ -1343,8 +1231,7 @@ async function eliminarProducto(id_base) {
     alert("Error al eliminar producto: " + err.message);
   }
 }
-    
-// 👉 Optimizar imagen igual que Step0 → resize a 300x180, WebP q=0.8
+
 async function optimizarImagen(file) {
   console.log(`📂 [optimizarImagen] Iniciando optimización: ${file.name} (${file.size} bytes)`);
 
@@ -1397,7 +1284,6 @@ async function optimizarImagen(file) {
   }
 }
 
-// 👉 Preview inmediato de la foto optimizada
 document.getElementById("inputFoto").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1425,37 +1311,29 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
   }
 
   try {
-    // 🔥 NUEVA LÓGICA: Obtener precio anterior para OFERTAS
     let precioViejo = 0;
-    let precioAnteriorParaEnviar = 0; // 🔥 NUEVO: Variable para enviar al backend
+    let precioAnteriorParaEnviar = 0; 
     
     if (window.productoEditandoId) {
       const productoExistente = window.todosLosProductos?.find(p => p.id_base === window.productoEditandoId);
       if (productoExistente) {
         precioViejo = parseFloat(productoExistente.precio) || 0;
         console.log(`💰 Precio anterior encontrado: $${precioViejo}`);
-        
-        // 🔥 NUEVO: Determinar si debemos guardar precio_anterior
-        // Solo si el precio VIEJO es MAYOR que el NUEVO (es una oferta)
         const precioNuevo = parseFloat(document.getElementById("precioProd").value);
         
         if (!isNaN(precioNuevo) && precioViejo > precioNuevo) {
-          // ¡Es una oferta! Guardar precio anterior
           precioAnteriorParaEnviar = precioViejo;
           console.log(`🔥 OFERTA DETECTADA: $${precioViejo} → $${precioNuevo} (Ahorro: $${(precioViejo - precioNuevo).toFixed(2)})`);
         } else if (precioViejo < precioNuevo) {
-          // El precio subió, NO guardar precio anterior
           precioAnteriorParaEnviar = 0;
           console.log(`📈 Precio aumentó: $${precioViejo} → $${precioNuevo} (NO es oferta)`);
         } else {
-          // Mismo precio o precio nuevo inválido
           precioAnteriorParaEnviar = 0;
           console.log(`📊 Precio sin cambios: $${precioViejo}`);
         }
       }
     }
 
-    // 1. Subir foto principal optimizada
     let foto_url = "";
     if (window.fotoOptimizada) {
       const formData = new FormData();
@@ -1481,17 +1359,13 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       foto_url = productoExistente?.imagen_url || "";
       console.log("🔄 Manteniendo foto principal existente:", foto_url);
     }
-
-    // 🔥 2. Subir fotos adicionales
     const fotosAdicionalesUrls = [];
     
-    // Primero, incluir fotos existentes si estamos editando
     if (window.fotosAdicionalesExistentes && window.fotosAdicionalesExistentes.length > 0) {
       fotosAdicionalesUrls.push(...window.fotosAdicionalesExistentes);
       console.log(`🔄 Manteniendo ${window.fotosAdicionalesExistentes.length} fotos adicionales existentes`);
     }
     
-    // Luego, subir nuevas fotos adicionales
     const fotosInput = document.getElementById('fotosAdicionales');
     if (fotosInput && fotosInput.files && fotosInput.files.length > 0) {
       console.log(`📸 Subiendo ${fotosInput.files.length} nuevas fotos adicionales...`);
@@ -1499,14 +1373,13 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       for (let i = 0; i < fotosInput.files.length; i++) {
         try {
           const file = fotosInput.files[i];
-          
-          // Optimizar cada foto adicional
+
           let blobOptimizado;
           try {
             blobOptimizado = await optimizarImagen(file);
           } catch (e) {
             console.warn(`⚠️ No se pudo optimizar foto ${i+1}, subiendo original:`, e);
-            blobOptimizado = file; // Usar archivo original si falla la optimización
+            blobOptimizado = file; 
           }
           
           const formData = new FormData();
@@ -1521,7 +1394,7 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
           if (!resp.ok) {
             const text = await resp.text();
             console.warn(`⚠️ Error subiendo foto adicional ${i+1}: ${resp.status} ${text}`);
-            continue; // Continuar con las demás fotos
+            continue; 
           }
 
           const data = await resp.json();
@@ -1531,14 +1404,12 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
           }
         } catch (err) {
           console.error(`❌ Error procesando foto adicional ${i+1}:`, err);
-          // Continuar con las demás fotos
         }
       }
     }
 
     console.log(`📊 Total fotos adicionales procesadas: ${fotosAdicionalesUrls.length}`);
 
-    // 3. Obtener datos del formulario
     const nombre = document.getElementById("nombreProd").value.trim();
     const precioNuevo = parseFloat(document.getElementById("precioProd").value);
     const descripcion = document.getElementById("descripcionProd").value.trim();
@@ -1550,8 +1421,6 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       alert("❌ Faltan campos obligatorios: nombre/grupo/precio");
       return;
     }
-
-    // 4. Procesar stock
     let stockPorTalle = {};
     const talles = tallesRaw ? tallesRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
     
@@ -1585,8 +1454,6 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
 
     console.log("📦 Stock procesado:", stockPorTalle);
 
-    // 🔥 5. MODIFICADO: Guardar en localStorage SOLO para referencia local (opcional)
-    // Esto es ahora redundante pero lo mantenemos por compatibilidad
     if (window.productoEditandoId && precioViejo > precioNuevo) {
       try {
         const historial = JSON.parse(localStorage.getItem('historial_precios') || '{}');
@@ -1598,7 +1465,6 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       }
     }
 
-    // 6. 🔥 NUEVO: Crear objeto producto CON precio_anterior
     const producto = {
       nombre: nombre,
       precio: precioNuevo,
@@ -1609,11 +1475,8 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       stock_por_talle: stockPorTalle,
       imagen_url: foto_url,
       fotos_adicionales: fotosAdicionalesUrls,
-      // 🔥 NUEVO: Incluir precio_anterior solo si es una oferta válida
       precio_anterior: precioAnteriorParaEnviar
     };
-
-    // 7. Preparar payload
     const esEdicion = window.productoEditandoId ? true : false;
     const payload = {
       producto: producto,
@@ -1621,20 +1484,16 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
       es_edicion: esEdicion
     };
 
-    // Si es edición, también enviar id_base DENTRO del producto
     if (esEdicion) {
       payload.producto.id_base = window.productoEditandoId;
       console.log("🔄 Modo EDICIÓN para ID:", window.productoEditandoId);
       console.log(`💰 precio_anterior a enviar: $${precioAnteriorParaEnviar} ${precioAnteriorParaEnviar > 0 ? '(OFERTA)' : '(sin oferta)'}`);
     } else {
       console.log("➕ Modo CREACIÓN de nuevo producto");
-      // Para productos nuevos, precio_anterior siempre será 0
       producto.precio_anterior = 0;
     }
 
     console.log("📤 Payload para backend:", JSON.stringify(payload, null, 2));
-
-    // 8. Enviar al backend
     const endpoint = "https://mpagina.onrender.com/guardar-producto";
     
     const respGuardar = await fetch(endpoint, {
@@ -1657,7 +1516,6 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
         `✅ Producto actualizado correctamente (${fotosAdicionalesUrls.length} fotos adicionales)` : 
         `✅ Producto creado correctamente (${fotosAdicionalesUrls.length} fotos adicionales)`;
       
-      // 🔥 NUEVO: Mostrar mensaje de oferta basado en precio_anterior del backend
       const tieneOferta = data.resultado?.tiene_oferta || precioAnteriorParaEnviar > 0;
       const precioAnteriorBackend = data.resultado?.precio_anterior || precioAnteriorParaEnviar;
       
@@ -1665,23 +1523,16 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
         const descuento = Math.round(((precioAnteriorBackend - precioNuevo) / precioAnteriorBackend) * 100);
         alert(`${mensaje}\n🔥 ¡OFERTA DETECTADA! -${descuento}% de descuento`);
         
-        // Mostrar en consola para debug
         console.log(`🎯 OFERTA CONFIRMADA: Antes $${precioAnteriorBackend} → Ahora $${precioNuevo} (-${descuento}%)`);
       } else {
         alert(mensaje);
         console.log(`📊 Producto guardado sin oferta: $${precioNuevo}`);
       }
-      
-      // 9. Limpiar formulario
+
       resetearFormularioAdmin();
-      
-      // 10. Limpiar variables temporales
       window.fotosAdicionalesExistentes = null;
-      
-      // 11. Ocultar formulario
       document.getElementById("adminCard").classList.add("d-none");
-      
-      // 12. Refrescar productos
+
       setTimeout(() => {
         if (typeof cargarProductos === "function") {
           cargarProductos();
@@ -1704,21 +1555,16 @@ document.getElementById("btnConfirmarProd").addEventListener("click", async () =
 function salirAdmin() {
   console.log("🚪 Saliendo de modo admin, limpiando token...");
 
-  // Desactivar modo admin y limpiar token
   window.modoAdmin = false;
   window.tokenAdmin = null;
-
-  // Limpiar la URL para quitar el ?token=...
   history.replaceState(null, "", "index.html");
 
-  // 🔥 NUEVO: Ocultar botón admin flotante
   const loginToggleBtn = document.getElementById("loginToggleBtn");
   if (loginToggleBtn) {
     loginToggleBtn.style.display = "none";
     console.log("✅ Botón admin flotante ocultado");
   }
   
-  // Refrescar productos para que se oculten los botones ✎
   if (window.todosLosProductos) {
     const cont = document.getElementById("productos");
     if (cont) {
@@ -1730,7 +1576,6 @@ function salirAdmin() {
     }
   }
 
-  // Ocultar botón de logout
   const logoutWrapper = document.getElementById("logoutAdminWrapper");
   if (logoutWrapper) {
     logoutWrapper.style.display = "none";
@@ -1738,8 +1583,6 @@ function salirAdmin() {
   } else {
     console.warn("⚠️ No se encontró #logoutAdminWrapper en el DOM");
   }
-
-  // Ocultar paneles de administración
   const adminCard = document.getElementById("adminCard");
   if (adminCard) {
     adminCard.classList.add("d-none");
@@ -1752,16 +1595,12 @@ function salirAdmin() {
     console.log("✅ configurarMP ocultado");
   }
 }
-
-// Mostrar el botón solo si modoAdmin está activo
 if (window.modoAdmin) {
   const logoutWrapper = document.getElementById("logoutAdminWrapper");
   if (logoutWrapper) {
     logoutWrapper.style.display = "block";
     console.log("🔑 Modo admin activo, mostrando botón de logout");
   }
-
-  // Mostrar paneles de administración
   const adminCard = document.getElementById("adminCard");
   if (adminCard) {
     adminCard.classList.remove("d-none");
@@ -1801,10 +1640,8 @@ function renderPaginacion(productosFiltrados) {
     pagDiv.appendChild(btn);
   }
 }
-
-// const EMAIL_VENDEDOR = urlParams.get("usuario") || "usuario@ejemplo.com";
 let urlProductos = `https://mpagina.onrender.com/api/productos?usuario=${encodeURIComponent(email)}`;
-// Si estás en modo admin y tenés token, lo incluimos
+
 if (window.modoAdmin && window.tokenAdmin) {
   urlProductos += `&token=${encodeURIComponent(window.tokenAdmin)}`;
 }
@@ -1832,25 +1669,20 @@ fetch(urlProductos)
       console.log("❌ ERROR: La respuesta NO es un array:", lista);
       return;
     }
-    
-    // 🔥 DIAGNÓSTICO DETALLADO DE CADA PRODUCTO
+
     console.log("\n🔍 ANALIZANDO CADA PRODUCTO:");
     lista.forEach((prod, idx) => {
       console.log(`\n   ${idx+1}. ${prod.nombre || 'Sin nombre'} (${prod.id_base || 'Sin ID'}):`);
       console.log(`       - Precio: $${prod.precio || 0} (tipo: ${typeof prod.precio})`);
       console.log(`       - Precio anterior: ${prod.precio_anterior || 'NO TIENE'} (tipo: ${typeof prod.precio_anterior})`);
       console.log(`       - ¿Campo "precio_anterior" existe?: ${'precio_anterior' in prod}`);
-      
-      // Mostrar todos los campos del producto
       console.log(`       - Todos los campos:`, Object.keys(prod).join(', '));
-      
-      // Mostrar producto específico que editamos
+
       if (prod.id_base === "campera_20251214_camperas_71551a") {
         console.log(`\n   🎯 ¡ESTE ES EL PRODUCTO EDITADO!`);
         console.log(`       - Datos completos:`, JSON.stringify(prod, null, 2));
         console.log(`       - ¿precio_anterior > precio?: ${prod.precio_anterior > prod.precio}`);
-        
-        // Si no tiene precio_anterior, mostrar qué campos sí tiene
+
         if (!prod.precio_anterior) {
           console.log(`       ⚠️ ¡NO TIENE PRECIO_ANTERIOR! Campos disponibles:`);
           Object.entries(prod).forEach(([key, value]) => {
@@ -1859,8 +1691,7 @@ fetch(urlProductos)
         }
       }
     });
-    
-    // Contar productos con oferta
+
     const productosConOferta = lista.filter(p => p.precio_anterior > 0 && p.precio_anterior > p.precio);
     console.log(`\n📊 RESUMEN: ${productosConOferta.length} productos con oferta de ${lista.length} total`);
     
@@ -1877,29 +1708,23 @@ fetch(urlProductos)
     
     console.log("\n🔍 [CARGA-PRODUCTOS] FIN DIAGNÓSTICO =======================\n");
 
-    // ORDENAR LOS PRODUCTOS: primero con stock, luego por precio
     const productosOrdenados = Array.isArray(lista) ? lista : [];
     
     productosOrdenados.sort((a, b) => {
-      // 1. Primero verificar si tienen stock
       const stockA = (a.stock_por_talle && Object.values(a.stock_por_talle).some(v => v > 0)) || 
                      (a.stock && a.stock > 0);
       const stockB = (b.stock_por_talle && Object.values(b.stock_por_talle).some(v => v > 0)) || 
                      (b.stock && b.stock > 0);
       
-      // Si A tiene stock y B no, A va primero
       if (stockA && !stockB) return -1;
-      // Si B tiene stock y A no, B va primero
       if (!stockA && stockB) return 1;
-      
-      // 2. Si ambos tienen o no tienen stock, ordenar por precio (menor a mayor)
+
       return (a.precio || 0) - (b.precio || 0);
     });
     
     window.todosLosProductos = productosOrdenados;
     console.log("🌐 Productos recibidos y ordenados:", window.todosLosProductos.length);
 
-    // 🔥 VERIFICAR QUE EL PRODUCTO EDITADO ESTÁ EN EL ARRAY
     const productoEditadoEnArray = window.todosLosProductos.find(p => p.id_base === "campera_20251214_camperas_71551a");
     if (productoEditadoEnArray) {
       console.log("✅ Producto editado encontrado en array global:");
@@ -1907,11 +1732,9 @@ fetch(urlProductos)
       console.log("   - Precio anterior:", productoEditadoEnArray.precio_anterior);
       console.log("   - Precio:", productoEditadoEnArray.precio);
       console.log("   - ¿Tiene oferta?:", productoEditadoEnArray.precio_anterior > productoEditadoEnArray.precio);
-      
-      // 🔥 FORZAR precio_anterior si no lo tiene
+
       if (!productoEditadoEnArray.precio_anterior || productoEditadoEnArray.precio_anterior <= productoEditadoEnArray.precio) {
         console.log("⚠️ Producto editado NO tiene oferta en array global, forzando...");
-        // Recuperar de localStorage temporalmente
         const historial = JSON.parse(localStorage.getItem('historial_precios') || '{}');
         if (historial["campera_20251214_camperas_71551a"]) {
           productoEditadoEnArray.precio_anterior = historial["campera_20251214_camperas_71551a"];
@@ -1922,13 +1745,10 @@ fetch(urlProductos)
       console.log("❌ Producto editado NO encontrado en array global");
     }
 
-    // 🔥 AGREGAR SUGERENCIAS SIMPLES PARA FORMULARIO ADMIN
     setTimeout(() => {
-      // Extraer grupos y subgrupos únicos
       const gruposUnicos = [...new Set(productosOrdenados.map(p => p.grupo).filter(Boolean))];
       const subgruposUnicos = [...new Set(productosOrdenados.map(p => p.subgrupo).filter(Boolean))];
-      
-      // Llenar datalist de grupos
+
       const datalistGrupos = document.getElementById('grupos-sugeridos');
       if (datalistGrupos && gruposUnicos.length > 0) {
         datalistGrupos.innerHTML = '';
@@ -1939,8 +1759,7 @@ fetch(urlProductos)
         });
         console.log(`✅ ${gruposUnicos.length} grupos para sugerencias`);
       }
-      
-      // Llenar datalist de subgrupos
+
       const datalistSubgrupos = document.getElementById('subgrupos-sugeridos');
       if (datalistSubgrupos && subgruposUnicos.length > 0) {
         datalistSubgrupos.innerHTML = '';
@@ -1969,7 +1788,7 @@ fetch(urlProductos)
     console.log("📂 Grupos detectados:", grupos);
 
     if (contGrupos) {
-      contGrupos.innerHTML = ""; // limpiar antes de insertar
+      contGrupos.innerHTML = ""; 
       grupos.forEach(g => {
         const btn = document.createElement("button");
         btn.className = "btn-grupo";
@@ -1983,7 +1802,6 @@ fetch(urlProductos)
       });
     }
 
-    // Render inicial: primer grupo y subgrupo
     const primerGrupo = grupos[0];
     const subgruposPrimer = [...new Set(window.todosLosProductos
       .filter(p => p.grupo === primerGrupo)
@@ -2007,11 +1825,10 @@ fetch(urlProductos)
     const cont = document.getElementById("productos");
     if (cont) cont.innerHTML = "<p>Error al cargar productos.</p>";
   });
-// 🔥 FUNCIÓN DE EMERGENCIA: Forzar oferta si el backend no la devuelve
+
 function forzarOfertaSiEsNecesario() {
   if (!window.todosLosProductos) return;
-  
-  // Lista de IDs que sabemos que tienen oferta
+
   const productosConOfertaConocida = [
     { id: "campera_20251214_camperas_71551a", precio_anterior: 2, precio_actual: 1 }
   ];
@@ -2021,8 +1838,7 @@ function forzarOfertaSiEsNecesario() {
     if (producto && (!producto.precio_anterior || producto.precio_anterior <= producto.precio)) {
       console.log(`🔥 Forzando oferta para ${producto.nombre}: $${productoInfo.precio_anterior} → $${productoInfo.precio_actual}`);
       producto.precio_anterior = productoInfo.precio_anterior;
-      
-      // Actualizar en el DOM inmediatamente
+
       setTimeout(() => {
         const cardExistente = document.querySelector(`[data-id="${productoInfo.id}"]`);
         if (cardExistente) {
@@ -2036,7 +1852,6 @@ function forzarOfertaSiEsNecesario() {
   });
 }
 
-// Llama a esta función después de cargar productos
 setTimeout(forzarOfertaSiEsNecesario, 2000);    
 function mostrarGrupo(nombre, event, auto = false) {
   console.log("🟦 mostrarGrupo llamado con:", { nombre, auto });
@@ -2047,7 +1862,6 @@ function mostrarGrupo(nombre, event, auto = false) {
     return;
   }
 
-  // Resetear botones de grupo
   document.querySelectorAll('.btn-grupo').forEach(btn => btn.classList.remove('active'));
   if (event?.target) {
     event.target.classList.add('active');
@@ -2061,7 +1875,6 @@ function mostrarGrupo(nombre, event, auto = false) {
   }
   panel.innerHTML = "";
 
-  // Normalizar y guardar grupo activo
   const grupoCanon = String(nombre || "").trim();
   window.currentGrupo = grupoCanon.toLowerCase();
   console.log("🎯 Grupo activo (canon):", grupoCanon);
@@ -2076,7 +1889,6 @@ function mostrarGrupo(nombre, event, auto = false) {
   )];
   console.log("📂 Subcategorías detectadas:", subcategorias);
 
-  // Crear botones de subgrupo
   subcategorias.forEach(sub => {
     const btn = document.createElement('button');
     btn.textContent = sub;
@@ -2085,31 +1897,24 @@ function mostrarGrupo(nombre, event, auto = false) {
     panel.appendChild(btn);
     console.log("➕ Botón subgrupo creado:", sub);
   });
-
-  // 🔁 Usar paginación en lugar de volcar todo
   renderPagina(1, productosGrupo);
   renderPaginacion(productosGrupo);
 
-  // 🔥 ANIMACIÓN MEJORADA para panel subcategorías
   if (subcategorias.length > 0) {
     if (!auto) {
-      // Forzar reflow para animación
       void panel.offsetWidth;
       panel.classList.remove('oculta');
       console.log("📂 Panel subcategorias visible (con animación)");
-      
-      // Asegurar que esté visible antes de ajustar posición
+
       setTimeout(() => {
         ajustarPosicionesPaneles();
       }, 10);
     } else {
-      // Forzar reflow para animación
       void panel.offsetWidth;
       panel.classList.add('oculta');
       console.log("📂 Panel subcategorias oculto (auto, con animación)");
     }
   } else {
-    // Forzar reflow para animación
     void panel.offsetWidth;
     panel.classList.add('oculta');
     console.log("📂 Grupo sin subcategorías (oculto con animación)");
@@ -2118,7 +1923,6 @@ function mostrarGrupo(nombre, event, auto = false) {
   console.log("✅ Productos renderizados con paginación en #productos");
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-// Extra: log de clicks en botones
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("btn-grupo")) {
     console.log("🟢 Click en botón grupo:", e.target.textContent);
@@ -2136,8 +1940,7 @@ function filtrarSubcategoria(grupo, subgrupo) {
     console.warn("⚠️ No existe #productos en el DOM");
     return;
   }
-  
-  // Limpiar con fade out
+
   cont.style.opacity = '0.5';
   cont.style.transition = 'opacity 0.2s ease';
   
@@ -2148,7 +1951,6 @@ function filtrarSubcategoria(grupo, subgrupo) {
     const subCanon = String(subgrupo || "").trim();
     console.log("🎯 Grupo canon:", grupoCanon, " | Subgrupo canon:", subCanon || `General_${grupoCanon}`);
 
-    // Filtrar productos
     let productosFiltrados;
     if (subCanon) {
       productosFiltrados = window.todosLosProductos.filter(p =>
@@ -2165,16 +1967,12 @@ function filtrarSubcategoria(grupo, subgrupo) {
 
     console.log("📦 Productos filtrados:", productosFiltrados.length);
 
-    // 🔁 Usar paginación en lugar de volcar todo
     renderPagina(1, productosFiltrados);
     renderPaginacion(productosFiltrados);
 
     console.log("✅ Productos renderizados con paginación en #productos");
     console.log("📥 Hijos actuales en #productos:", cont.children.length);
-
-    // Fade in
     cont.style.opacity = '1';
-    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, 200);
 }
@@ -2183,8 +1981,7 @@ function filtrarSubcategoria(grupo, subgrupo) {
 window.onload = function() {
   const panelSubcategorias = document.getElementById('panelSubcategorias');
   const panelGrupos = document.getElementById('panelGrupos');
-  
-  // Inicializar ocultos con animación
+
   if (panelSubcategorias) {
     panelSubcategorias.classList.add('oculta');
   }
@@ -2192,14 +1989,12 @@ window.onload = function() {
     panelGrupos.classList.add('oculta');
   }
 
-  // Carrito toggle
   document.getElementById('toggleCarrito').onclick = function() {
     const carritoDiv = document.getElementById('carrito');
     if (!carritoDiv) return;
     carritoDiv.style.display = carritoDiv.style.display === 'none' ? 'block' : 'none';
   };
-  
-  // Ajustar posiciones después de que todo cargue
+
   setTimeout(() => {
     ajustarPosicionesPaneles();
   }, 300);
@@ -2216,11 +2011,9 @@ function agregarAlCarritoDOM(nombre, idPrecioSpan, idCantidad, id_base, grupo = 
     alert("❌ Error: No se pudieron obtener los datos del producto");
     return;
   }
-  
-  // 🔥 OBTENER TALLE (obligatorio si el producto tiene talles)
+
   const talleElegido = talleSelect?.value || "unico";
-  
-  // Verificar stock para el talle seleccionado
+
   let stockDisponible = 0;
   const stockPorTalle = window[`stock_por_talle_${id_base}`];
   
@@ -2242,8 +2035,7 @@ function agregarAlCarritoDOM(nombre, idPrecioSpan, idCantidad, id_base, grupo = 
   }
   
   const precio = parseFloat(precioSpan.textContent.replace("$", "").replace(",", "")) || 0;
-  
-  // Buscar si ya existe en el carrito (mismo producto y mismo talle)
+
   const existente = carrito.find(item => 
     item.id_base === id_base && 
     item.talle === talleElegido
@@ -2301,20 +2093,17 @@ function loginAdmin(event) {
     .then(data => {
       if (data.status === "ok" && data.token) {
         alert("✅ Acceso concedido");
-        
-        // 🔥 NUEVO: Ocultar botón admin flotante al entrar
+ 
         const loginToggleBtn = document.getElementById("loginToggleBtn");
         if (loginToggleBtn) {
           loginToggleBtn.style.display = "none";
         }
-        
-        // Ocultar formulario flotante
+
         const loginForm = document.getElementById("loginFloatingForm");
         if (loginForm) {
           loginForm.style.display = "none";
         }
-        
-        // redirigir al preview dinámico con token en la URL
+
         location.href = `index.html?token=${data.token}`;
       } else {
         alert("❌ " + data.message);
@@ -2349,8 +2138,6 @@ function eliminarDelCarrito(id_base, talle, event) {
     
 function mostrarSubgrupo(subgrupo, event) {
   console.log("🟩 mostrarSubgrupo llamada con:", subgrupo);
-
-  // Buscar el grupo actualmente activo (botón marcado)
   const grupoActivoBtn = document.querySelector('.btn-grupo.active');
   const grupoActivo = grupoActivoBtn ? grupoActivoBtn.textContent.trim() : null;
   console.log("🎯 Grupo activo detectado:", grupoActivo);
@@ -2359,15 +2146,12 @@ function mostrarSubgrupo(subgrupo, event) {
     console.warn("⚠️ No hay grupo activo para mostrar subgrupo:", subgrupo);
     return;
   }
-
-  // Resetear botones de subgrupo
   document.querySelectorAll('.btn-subgrupo').forEach(btn => btn.classList.remove('active'));
   if (event?.target) {
     event.target.classList.add('active');
     console.log("👉 Botón subgrupo marcado:", event.target.textContent);
   }
 
-  // Actualizar estado canónico
   const grupoCanon = String(grupoActivo).trim();
   const subCanon = String(subgrupo || "").trim();
 
@@ -2375,11 +2159,9 @@ function mostrarSubgrupo(subgrupo, event) {
   window.currentSub = subCanon.toLowerCase();
   console.log("📌 Estado canónico actualizado:", { currentGrupo: window.currentGrupo, currentSub: window.currentSub });
 
-  // Filtrar y renderizar productos del grupo + subgrupo
   console.log("➡️ Llamando a filtrarSubcategoria con:", { grupoCanon, subCanon });
   filtrarSubcategoria(grupoCanon, subCanon);
 
-  // Logs extra para verificar DOM y estilos
   const cont = document.getElementById("productos");
   if (cont) {
     console.log("📥 Hijos actuales en #productos después de mostrarSubgrupo:", cont.children.length);
@@ -2431,8 +2213,6 @@ function actualizarCarrito() {
   carrito.forEach(item => {
     const subtotal = item.precio * item.cantidad;
     suma += subtotal;
-
-    // Crear descripción con talle y color
     let descripcion = item.nombre;
     if (item.talle) descripcion += ` (Talle: ${item.talle})`;
     if (item.color) descripcion += ` (Color: ${item.color})`;
@@ -2460,8 +2240,6 @@ function mostrarTodos() {
   const panelSub = document.getElementById('panelSubcategorias');
 
   if (!panelGrupos || !panelSub) return;
-
-  // Forzar reflow para animaciones CSS
   void panelGrupos.offsetWidth;
   void panelSub.offsetWidth;
   
@@ -2469,7 +2247,6 @@ function mostrarTodos() {
   console.log("   Panel Grupos oculto?:", panelGrupos.classList.contains('oculta'));
   console.log("   Panel Sub oculto?:", panelSub.classList.contains('oculta'));
   
-  // Toggle panel grupos con animación
   if (panelGrupos.classList.contains('oculta')) {
     panelGrupos.classList.remove('oculta');
     console.log("👉 Mostrando panel grupos con animación");
@@ -2477,14 +2254,12 @@ function mostrarTodos() {
     panelGrupos.classList.add('oculta');
     console.log("👉 Ocultando panel grupos con animación");
   }
-  
-  // Siempre ocultar panel subcategorías si está visible
+
   if (!panelSub.classList.contains('oculta')) {
     panelSub.classList.add('oculta');
     console.log("👉 Ocultando panel subcategorías");
   }
-  
-  // Ajustar posiciones después de un pequeño delay para que CSS anime
+
   setTimeout(() => {
     ajustarPosicionesPaneles();
   }, 50);
@@ -2494,7 +2269,7 @@ function irAContacto() {
   const contacto = document.getElementById('ubicacion');
   if (contacto) contacto.scrollIntoView({ behavior: 'smooth' });
 }
-window.irAContacto = irAContacto; // si usás módulos
+window.irAContacto = irAContacto; 
 
     
 function renderProducto(p) {
@@ -2505,8 +2280,6 @@ function renderProducto(p) {
   card.className = "col-lg-4 col-md-6 col-sm-12 mb-4 fade-reorder card-producto";
   card.dataset.id = p.id_base;
   card.dataset.precio = p.precio;
-
-  // 🔥 VERIFICACIÓN DETALLADA DEL PRECIO ANTERIOR
   console.log("💰 [PRECIO-ANTERIOR] Verificación:");
   console.log("   - ID Producto:", p.id_base);
   console.log("   - Nombre:", p.nombre);
@@ -2515,15 +2288,13 @@ function renderProducto(p) {
   console.log("   - ¿Existe campo precio_anterior?:", "precio_anterior" in p);
   console.log("   - Valor directo:", p.precio_anterior);
   console.log("   - Valor parseado:", parseFloat(p.precio_anterior));
-  
-  // 🔥 NUEVA LÓGICA: Usar precio_anterior de Firestore (viene del backend)
+
   const precioActual = parseFloat(p.precio) || 0;
   const precioAnterior = parseFloat(p.precio_anterior) || 0;
   
   console.log("   - Precio actual (parseado):", precioActual);
   console.log("   - Precio anterior (parseado):", precioAnterior);
-  
-  // Detectar si es oferta (precio anterior > precio actual)
+
   const esOferta = precioAnterior > 0 && precioAnterior > precioActual;
   const descuentoPorcentaje = esOferta ? 
     Math.round(((precioAnterior - precioActual) / precioAnterior) * 100) : 0;
@@ -2531,8 +2302,7 @@ function renderProducto(p) {
   console.log("   - ¿Es oferta?:", esOferta, "(precioAnterior > precioActual:", precioAnterior > precioActual, ")");
   console.log("   - Porcentaje descuento:", descuentoPorcentaje + "%");
   console.log("   - Ahorro: $" + (precioAnterior - precioActual).toFixed(2));
-  
-  // 🔥 BUSCAR EN EL ARRAY GLOBAL POR SI ACASO
+
   if (!esOferta && window.todosLosProductos) {
     console.log("   🔍 Buscando precio anterior en array global...");
     const productoCompleto = window.todosLosProductos.find(prod => prod.id_base === p.id_base);
@@ -2542,7 +2312,6 @@ function renderProducto(p) {
       if (productoCompleto.precio_anterior && productoCompleto.precio_anterior > precioActual) {
         console.log("   ⚠️ ¡OFERTA ENCONTRADA EN ARRAY GLOBAL!");
         console.log("   - Usando precio anterior del array:", productoCompleto.precio_anterior);
-        // Sobreescribir si encontramos oferta en el array global
         precioAnterior = parseFloat(productoCompleto.precio_anterior) || 0;
         esOferta = precioAnterior > 0 && precioAnterior > precioActual;
       }
@@ -2552,7 +2321,6 @@ function renderProducto(p) {
   console.log("   - Resultado final - Es oferta:", esOferta);
   console.log("   - Precio anterior final:", precioAnterior);
   
-  // 🔥 SOLO usar stock_por_talle
   const tieneStockPorTalle = p.stock_por_talle && Object.keys(p.stock_por_talle).length > 0;
   
   console.log("📦 [STOCK] Verificación:");
@@ -2566,13 +2334,11 @@ function renderProducto(p) {
   let stockInicial = 0;
   
   if (tieneStockPorTalle) {
-    // 🔥 PRIORIDAD ÚNICA: Usar stock_por_talle
     stockData = p.stock_por_talle;
     window[`stock_por_talle_${p.id_base}`] = stockData;
     
     console.log("   - Stock por talle asignado:", stockData);
-    
-    // Generar opciones de talles
+
     const tallesDisponibles = Object.keys(stockData);
     console.log("   - Talles disponibles:", tallesDisponibles);
     
@@ -2584,23 +2350,20 @@ function renderProducto(p) {
         `<option value="${talle}">${talle} (${stock} disponible${stock > 1 ? 's' : ''})</option>` :
         `<option value="${talle}" disabled>${talle} (Agotado)</option>`;
       opcionesTalles += opcion;
-      
-      // Si es el primer talle con stock, usarlo como valor inicial
+    
       if (stockInicial === 0 && stock > 0) {
         stockInicial = stock;
         talleInicial = talle;
         console.log(`   - Talle inicial elegido: ${talleInicial} (stock: ${stockInicial})`);
       }
     });
-    
-    // Si ningún talle tiene stock, usar el primero disponible
+
     if (stockInicial === 0 && tallesDisponibles.length > 0) {
       talleInicial = tallesDisponibles[0];
       stockInicial = stockData[talleInicial] || 0;
       console.log(`   - Sin stock, usando primer talle: ${talleInicial} (stock: ${stockInicial})`);
     }
   } else {
-    // 🔥 Producto sin talles
     const stockGeneral = p.stock || 0;
     stockData = { "unico": stockGeneral };
     window[`stock_por_talle_${p.id_base}`] = stockData;
@@ -2614,14 +2377,12 @@ function renderProducto(p) {
   console.log("   - Stock inicial final:", stockInicial);
   console.log("   - Talle inicial final:", talleInicial);
 
-  // Escape de caracteres
   const nombreEscapado = p.nombre.replace(/'/g, "\\'").replace(/"/g, '\\"');
   const descripcionEscapada = (p.descripcion || "").replace(/'/g, "\\'").replace(/"/g, '\\"');
   const imagenUrl = p.imagen_url || '/static/img/fallback.webp';
   const grupoEscapado = (p.grupo || "").replace(/'/g, "\\'");
   const subgrupoEscapado = (p.subgrupo || "").replace(/'/g, "\\'");
-  
-  // Escapar URLs de fotos adicionales
+
   const fotosAdicionalesSeguras = (p.fotos_adicionales || []).map(foto => 
     foto.replace(/'/g, "\\'").replace(/"/g, '\\"')
   );
@@ -2632,7 +2393,6 @@ function renderProducto(p) {
   
   const onclickAgregar = `agregarAlCarritoDOM('${nombreEscapado}', 'precio_${p.id_base}', 'cantidad_${p.id_base}', '${p.id_base}', '${grupoEscapado}', '${subgrupoEscapado}')`;
   
-  // 🔥 CREAR URL DE WHATSAPP ESPECÍFICA PARA ESTE PRODUCTO
   let whatsappUrl = configWhatsApp;
   
   if (configWhatsApp && configWhatsApp.includes("wa.me")) {
@@ -2645,8 +2405,7 @@ function renderProducto(p) {
       whatsappUrl = `${configWhatsApp}?text=${mensaje}`;
     }
   }
-  
-  // 🔥 FOTOS ADICIONALES - SIN TEXTO
+
   const fotosAdicionalesHTML = fotosAdicionalesSeguras.length > 0 ? `
     <div class="fotos-adicionales mt-2">
       <div class="d-flex flex-wrap mt-1" style="gap: 3px;">
@@ -2853,7 +2612,6 @@ function renderProducto(p) {
   console.log("   - Card añadida al DOM");
   console.log("🎯 [RENDER-PRODUCTO] FIN ======================================\n\n");
 
-  // 🔥 Configurar talle inicial
   if (talleInicial) {
     setTimeout(() => {
       const talleSelect = document.getElementById(`talle_${p.id_base}`);
@@ -2870,9 +2628,7 @@ function renderProducto(p) {
   return card;
 }
 
-// 🔥 AGREGAR ANIMACIÓN CSS PARA LA ETIQUETA DE OFERTA
 (function() {
-  // Verificar si ya existe la animación
   if (!document.getElementById('oferta-animacion-css')) {
     const style = document.createElement('style');
     style.id = 'oferta-animacion-css';
@@ -2921,11 +2677,9 @@ function actualizarUIStock(idProducto, stockDisponible, talleSeleccionado) {
   const stockSpan = document.getElementById(`stock_${idProducto}`);
   const cantidadInput = document.getElementById(`cantidad_${idProducto}`);
   const agregarBtn = document.getElementById(`btn_agregar_${idProducto}`);
-  
-  // Actualizar el texto del stock
+
   stockSpan.textContent = stockDisponible > 0 ? stockDisponible : "Sin stock";
-  
-  // Actualizar clases de estilo
+
   if (stockDisponible > 0) {
     stockSpan.classList.remove("text-danger");
     stockSpan.classList.add("text-success");
@@ -2934,8 +2688,7 @@ function actualizarUIStock(idProducto, stockDisponible, talleSeleccionado) {
     stockSpan.classList.remove("text-success");
     stockSpan.classList.add("text-danger");
   }
-  
-  // Actualizar el input de cantidad
+
   cantidadInput.max = stockDisponible;
   
   if (stockDisponible > 0) {
@@ -2958,8 +2711,6 @@ function actualizarUIStock(idProducto, stockDisponible, talleSeleccionado) {
   console.log(`✅ Stock actualizado: Talle ${talleSeleccionado} → ${stockDisponible} unidades`);
 }
 
-    
-// 🔥 FUNCIÓN COMPLETA PARA ACTUALIZAR OFERTAS EN LOTE (para administradores)
 async function actualizarOfertasAutomaticamente() {
   if (!window.modoAdmin) {
     console.log("❌ Solo administradores pueden usar esta función");
@@ -2979,12 +2730,10 @@ async function actualizarOfertasAutomaticamente() {
   }
   
   console.log(`📊 Analizando ${productos.length} productos...`);
-  
-  // 🔥 1. Calcular promedios por grupo para referencia
+
   const promediosPorGrupo = {};
   const productosPorGrupo = {};
-  
-  // Agrupar productos por grupo
+
   productos.forEach(p => {
     const grupo = p.grupo || "General";
     const precio = parseFloat(p.precio) || 0;
@@ -2998,15 +2747,13 @@ async function actualizarOfertasAutomaticamente() {
     promediosPorGrupo[grupo].cantidad++;
     productosPorGrupo[grupo].push(p);
   });
-  
-  // Calcular promedios
+
   Object.keys(promediosPorGrupo).forEach(grupo => {
     promediosPorGrupo[grupo].promedio = 
       promediosPorGrupo[grupo].suma / promediosPorGrupo[grupo].cantidad;
     console.log(`📈 Grupo "${grupo}": Promedio $${promediosPorGrupo[grupo].promedio.toFixed(2)} (${promediosPorGrupo[grupo].cantidad} productos)`);
   });
-  
-  // 🔥 2. Analizar cada producto
+
   for (const producto of productos) {
     try {
       productosProcesados++;
@@ -3015,8 +2762,7 @@ async function actualizarOfertasAutomaticamente() {
       const precioAnteriorActual = parseFloat(producto.precio_anterior) || 0;
       const grupo = producto.grupo || "General";
       const promedioGrupo = promediosPorGrupo[grupo]?.promedio || precioActual;
-      
-      // Si ya tiene oferta válida, mantenerla
+
       if (precioAnteriorActual > precioActual) {
         console.log(`✅ Producto "${producto.nombre}" ya tiene oferta activa (${precioAnteriorActual} → ${precioActual})`);
         continue;
@@ -3024,16 +2770,13 @@ async function actualizarOfertasAutomaticamente() {
       
       let necesitaActualizar = false;
       let nuevoPrecioAnterior = 0;
-      
-      // 🔥 LÓGICA 1: Si el precio está por debajo del promedio del grupo (20% o más)
+  
       if (precioActual < promedioGrupo * 0.8) {
-        // El precio es al menos 20% menor que el promedio del grupo
-        nuevoPrecioAnterior = Math.round(promedioGrupo); // Usar promedio como referencia
+        nuevoPrecioAnterior = Math.round(promedioGrupo); /
         necesitaActualizar = true;
         console.log(`🔥 ${producto.nombre}: Está 20%+ bajo el promedio del grupo ($${precioActual} < $${promedioGrupo.toFixed(2)})`);
       }
-      
-      // 🔥 LÓGICA 2: Comparar con productos similares en el mismo grupo
+
       const productosSimilares = productosPorGrupo[grupo] || [];
       if (productosSimilares.length > 1) {
         const preciosSimilares = productosSimilares
@@ -3043,40 +2786,34 @@ async function actualizarOfertasAutomaticamente() {
         if (preciosSimilares.length > 0) {
           const precioMaximo = Math.max(...preciosSimilares);
           const precioMinimo = Math.min(...preciosSimilares);
-          
-          // Si el precio está cerca del mínimo pero no es el único
+ 
           if (precioActual <= precioMinimo * 1.1 && precioActual < precioMaximo * 0.9) {
-            nuevoPrecioAnterior = precioMaximo; // Usar el precio más alto como referencia
+            nuevoPrecioAnterior = precioMaximo; 
             necesitaActualizar = true;
             console.log(`🔥 ${producto.nombre}: Es de los más baratos en su grupo (${precioActual} vs máximo ${precioMaximo})`);
           }
         }
       }
-      
-      // 🔥 LÓGICA 3: Detectar precios que termin en .99 o .90 (típico de ofertas)
+
       const decimal = precioActual - Math.floor(precioActual);
       if ((decimal >= 0.95 && decimal <= 0.99) || decimal === 0.90) {
-        // Posible precio de oferta, buscar referencia
-        const referencia = Math.round(precioActual / 0.8); // Asume 20% de descuento
+        const referencia = Math.round(precioActual / 0.8); 
         if (referencia > precioActual) {
           nuevoPrecioAnterior = referencia;
           necesitaActualizar = true;
           console.log(`🔥 ${producto.nombre}: Tiene patrón de precio de oferta (termina en .${Math.round(decimal*100)})`);
         }
       }
-      
-      // 🔥 LÓGICA 4: Productos sin stock no deberían estar en oferta
+
       const tieneStock = producto.stock > 0 || 
                         (producto.stock_por_talle && Object.values(producto.stock_por_talle).some(v => v > 0));
       
       if (!tieneStock && precioAnteriorActual > 0) {
-        // Producto agotado pero marcado como oferta, quitar oferta
         nuevoPrecioAnterior = 0;
         necesitaActualizar = true;
         console.log(`📦 ${producto.nombre}: Sin stock, quitando oferta`);
       }
-      
-      // 🔥 3. Aplicar cambios si es necesario
+
       if (necesitaActualizar && nuevoPrecioAnterior !== precioAnteriorActual) {
         try {
           
@@ -3092,8 +2829,7 @@ async function actualizarOfertasAutomaticamente() {
       errores++;
     }
   }
-  
-  // 🔥 4. Resumen
+
   console.log(`
 🎯 RESUMEN ACTUALIZACIÓN DE OFERTAS:
    📦 Productos analizados: ${productosProcesados}
@@ -3101,12 +2837,10 @@ async function actualizarOfertasAutomaticamente() {
    ❌ Errores: ${errores}
    ⏱️  Tiempo: ${new Date().toLocaleTimeString()}
   `);
-  
-  // 🔥 5. Si hubo cambios, actualizar la vista
+
   if (ofertasActualizadas > 0) {
     alert(`✅ Se actualizaron ${ofertasActualizadas} ofertas automáticamente`);
-    
-    // Recargar productos
+
     setTimeout(() => {
       if (typeof cargarProductos === "function") {
         cargarProductos();
@@ -3123,21 +2857,14 @@ async function actualizarOfertasAutomaticamente() {
   };
 }
 
-
-
-    
-// 👉 Función que arma el array de items reales desde el carrito
 function obtenerCarrito() {
   console.log("🛒 [obtenerCarrito] Mapeando carrito a formato MP:");
   
   return carrito.map(item => {
-    // Debug: mostrar qué datos tenemos
     console.log("  - Item original:", item);
-    
-    // Asegurar que precio sea número
+
     let precio = item.precio;
     if (typeof precio === 'string') {
-      // Remover símbolo $ y comas, convertir a float
       precio = parseFloat(precio.replace(/[$,]/g, '').trim());
       console.log(`  - Precio convertido de "${item.precio}" a ${precio}`);
     } else if (typeof precio === 'number') {
@@ -3146,8 +2873,7 @@ function obtenerCarrito() {
       precio = 0;
       console.warn(`  - ⚠️ Precio no válido: ${precio}, usando 0`);
     }
-    
-    // Asegurar que cantidad sea número
+
     let cantidad = parseInt(item.cantidad) || 1;
     
     const itemFormateado = {
@@ -3157,9 +2883,8 @@ function obtenerCarrito() {
       id_base: item.id_base,
       grupo: item.grupo || "",
       subgrupo: item.subgrupo || "",
-      // 👇 MANTENER también los campos originales para Firestore
       nombre: item.nombre,
-      precio: precio,  // precio convertido a número
+      precio: precio,  
       cantidad: cantidad,
       talle: item.talle || ""
     };
@@ -3181,7 +2906,6 @@ function ajustarPosicionesPaneles() {
 
   console.log("🔧 ajustando posiciones de paneles...");
 
-  // Solo ajustar si no están ocultos
   if (!panelGrupos.classList.contains('oculta')) {
     const alturaBarra = barraNav ? barraNav.offsetHeight : 0;
     panelGrupos.style.top = alturaBarra + 'px';
@@ -3203,18 +2927,13 @@ function ajustarPosicionesPaneles() {
                 "alturaBarra:", alturaBarra, "alturaGrupos:", alturaGrupos);
   }
 
-  // Logs de diagnóstico
   const styleGrupos = window.getComputedStyle(panelGrupos);
   const styleSub = window.getComputedStyle(panelSub);
   console.log("👁️ PanelGrupos - display:", styleGrupos.display, "opacity:", styleGrupos.opacity, "top:", styleGrupos.top);
   console.log("👁️ PanelSub - display:", styleSub.display, "opacity:", styleSub.opacity, "top:", styleSub.top);
 }
 
-
-    
-////////////////////////////////////////////////////
 document.addEventListener("DOMContentLoaded", () => {
-  // Ajustar posiciones al cargar y al redimensionar
   window.addEventListener("load", ajustarPosicionesPaneles);
   window.addEventListener("resize", ajustarPosicionesPaneles);
 
@@ -3239,7 +2958,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Detectar token admin
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get("token");
 
@@ -3251,10 +2969,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.modoAdmin = false;
   }
 
-  // Inicializar variables de stock por talle
   window.stockPorTalleData = {};
-  
-  // Delegación de eventos para actualización de stock por talle
+
   document.addEventListener('change', (e) => {
     if (e.target.id && e.target.id.startsWith('talle_')) {
       const idProducto = e.target.id.replace('talle_', '');
@@ -3264,14 +2980,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-
-  // Botón Subcategorías (si existe)
   const btnSubcategorias = document.getElementById("btnSubcategorias");
   if (btnSubcategorias) {
     btnSubcategorias.addEventListener("click", () => {
       const panelSub = document.getElementById("panelSubcategorias");
       if (panelSub) {
-        // Forzar reflow para animación
         void panelSub.offsetWidth;
         if (panelSub.classList.contains('oculta')) {
           panelSub.classList.remove("oculta");
@@ -3285,23 +2998,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Delegación de eventos para botones de grupo dinámicos
   document.addEventListener("click", (e) => {
-    // Animación para botones de grupo
     if (e.target.classList.contains("btn-grupo")) {
       setTimeout(() => {
         ajustarPosicionesPaneles();
       }, 150);
     }
-
-    // Animación para botones de subgrupo
     if (e.target.classList.contains("btn-subgrupo")) {
       setTimeout(() => {
         ajustarPosicionesPaneles();
       }, 150);
     }
 
-    // Cerrar carrito al hacer clic fuera
     const carritoDiv = document.getElementById("carrito");
     const toggleBtn = document.getElementById("toggleCarrito");
     if (carritoDiv && toggleBtn) {
@@ -3312,7 +3020,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Cerrar paneles al hacer clic fuera (con animación)
     const panelGrupos = document.getElementById("panelGrupos");
     const panelSub = document.getElementById("panelSubcategorias");
     if (panelGrupos && panelSub) {
@@ -3322,11 +3029,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const esBotonSubgrupo = e.target.classList.contains("btn-subgrupo");
       const esBotonNavegacion = !!e.target.closest(".barra-navegacion");
 
-      // Solo cerrar si no se hizo clic en elementos relacionados
       if (!esClickDentroGrupos && !esClickDentroSub && !esBotonGrupo && 
           !esBotonSubgrupo && !esBotonNavegacion && e.target.id !== 'btnProductos') {
-        
-        // Animar el cierre de los paneles
+
         if (!panelGrupos.classList.contains('oculta')) {
           void panelGrupos.offsetWidth;
           panelGrupos.classList.add("oculta");
@@ -3338,18 +3043,16 @@ document.addEventListener("DOMContentLoaded", () => {
           panelSub.classList.add("oculta");
           console.log("👉 Cerrando panel subcategorías (clic fuera)");
         }
-        
-        // Ajustar posiciones después de la animación
+  
         setTimeout(ajustarPosicionesPaneles, 200);
       }
     }
   });
 
-  // 👉 Ordenar por precio
   const ordenSelect = document.getElementById("ordenPrecio");
   if (ordenSelect) {
     ordenSelect.addEventListener("change", (e) => {
-      const valor = e.target.value; // "asc" o "desc"
+      const valor = e.target.value; 
 
       const grupoActivoBtn = document.querySelector(".btn-grupo.active");
       const grupoActivo = grupoActivoBtn ? grupoActivoBtn.textContent.trim() : null;
@@ -3379,7 +3082,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const cont = document.getElementById("productos");
       if (!cont) return;
 
-      // Animar la transición
       cont.style.opacity = '0.5';
       cont.style.transition = 'opacity 0.3s ease';
       
@@ -3390,8 +3092,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cont.appendChild(card);
           setTimeout(() => card.classList.remove("fade-reorder"), 50);
         });
-        
-        // Restaurar opacidad
+
         setTimeout(() => {
           cont.style.opacity = '1';
         }, 50);
@@ -3399,7 +3100,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 👉 Mostrar card de admin y botón Mercado Pago si corresponde
   if (window.modoAdmin) {
     const adminCard = document.getElementById("adminCard");
     if (adminCard) {
@@ -3422,7 +3122,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 👉 Inicializar Mercado Pago dinámicamente
   async function initMercadoPago() {
     try {
       const resp = await fetch(`${URL_BACKEND}/api/mp_public_key?email=${encodeURIComponent(email)}`);
@@ -3451,7 +3150,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initMercadoPago();
 
-  // 👉 Función de pago limpia con integración de orden_id
   async function pagarConMercadoPago() {
     try {
       if (!carrito.length) {
@@ -3482,7 +3180,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (data && data.preference_id && window.mp) {
-        // 👇 Guardar el external_reference para usarlo en el formulario cliente
         window.orden_id = data.external_reference;
 
         window.mp.checkout({
@@ -3490,7 +3187,6 @@ document.addEventListener("DOMContentLoaded", () => {
           autoOpen: true
         });
       } else if (data && data.init_point) {
-        // 👇 Guardar también aquí
         window.orden_id = data.external_reference;
         window.location.href = data.init_point;
       }
@@ -3504,16 +3200,13 @@ document.addEventListener("DOMContentLoaded", () => {
     pagarBtn.addEventListener("click", pagarConMercadoPago);
   }
 
-  // 👉 VERIFICAR SI VENIMOS DE CONFIGURACIÓN EXITOSA DE MERCADO PAGO
-  // Esto debe ejecutarse después de todo lo anterior
   setTimeout(() => {
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.get('mp_configurado') === 'true') {
         const emailVendedor = urlParams.get('email');
         console.log('✅ Mercado Pago configurado exitosamente para:', emailVendedor);
-        
-        // Mostrar mensaje de éxito con animación
+
         const alertDiv = document.createElement('div');
         alertDiv.textContent = '✅ ¡Mercado Pago configurado exitosamente! Ahora puedes recibir pagos.';
         alertDiv.style.cssText = `
@@ -3533,25 +3226,21 @@ document.addEventListener("DOMContentLoaded", () => {
           font-weight: bold;
         `;
         document.body.appendChild(alertDiv);
-        
-        // Animar entrada
+
         setTimeout(() => {
           alertDiv.style.opacity = '1';
           alertDiv.style.transform = 'translateX(-50%) translateY(0)';
         }, 100);
         
-        // Animar salida después de 3 segundos
         setTimeout(() => {
           alertDiv.style.opacity = '0';
           alertDiv.style.transform = 'translateX(-50%) translateY(-20px)';
           setTimeout(() => alertDiv.remove(), 500);
         }, 3000);
-        
-        // Limpiar la URL (quitar parámetros)
+
         const nuevaURL = window.location.pathname + '?email=' + encodeURIComponent(emailVendedor);
         window.history.replaceState({}, document.title, nuevaURL);
-        
-        // Recargar para actualizar el estado (mostrar botón de pago, etc.)
+
         setTimeout(() => {
             location.reload();
         }, 1500);
@@ -3577,33 +3266,28 @@ document.addEventListener("DOMContentLoaded", () => {
           font-weight: bold;
         `;
         document.body.appendChild(errorDiv);
-        
-        // Animar entrada
+  
         setTimeout(() => {
           errorDiv.style.opacity = '1';
           errorDiv.style.transform = 'translateX(-50%) translateY(0)';
         }, 100);
-        
-        // Animar salida después de 3 segundos
+
         setTimeout(() => {
           errorDiv.style.opacity = '0';
           errorDiv.style.transform = 'translateX(-50%) translateY(-20px)';
           setTimeout(() => errorDiv.remove(), 500);
         }, 3000);
-        
-        // Limpiar la URL
+
         const nuevaURL = window.location.pathname;
         window.history.replaceState({}, document.title, nuevaURL);
     }
   }, 100);
-  
-  // Ajustar posiciones iniciales después de un breve delay
+
   setTimeout(() => {
     ajustarPosicionesPaneles();
   }, 500);
 });
-    
-// 👉 Nueva función ordenarGrupo
+
 function ordenarGrupo(valor) {
   console.log("🔄 ordenarGrupo llamada con:", valor);
 
@@ -3652,36 +3336,27 @@ function ordenarGrupo(valor) {
 
 window.ordenarGrupo = ordenarGrupo;
 
-// Botón Productos (SOLO cierra los paneles)
 const btnProductos = document.getElementById('btnProductos');
 if (btnProductos) {
   btnProductos.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita conflictos con otros clicks
-
-    // Solo ocultamos los paneles
+    e.stopPropagation(); 
     document.getElementById('panelGrupos').classList.add('oculta');
     document.getElementById('panelSubcategorias').classList.add('oculta');
-    
-    // Eliminamos mostrarTodos() y scrollTo() para no alterar la vista
+
   });
 }
 
-// Animación del logo al hacer click
 document.querySelector('.logo').addEventListener('click', function() {
   const logo = this;
   
-  // 1. Desactivar click temporalmente
   logo.style.pointerEvents = 'none';
-  
-  // 2. Rotación 3D (360° en Y)
+
   logo.style.transition = 'transform 0.8s ease, opacity 0.4s ease';
   logo.style.transform = 'rotateY(360deg)';
   logo.style.opacity = '0.7';
-  
-  // 3. Crear mensaje flotante - POSICIÓN FIJA en lugar de absoluta
   const mensaje = document.createElement('div');
   mensaje.textContent = 'Gracias por la visita! ❤️';
-  mensaje.style.position = 'fixed'; // Cambiado de absolute a fixed
+  mensaje.style.position = 'fixed';
   mensaje.style.top = '50%';
   mensaje.style.left = '50%';
   mensaje.style.transform = 'translate(-50%, -50%) scale(0.8)';
@@ -3692,29 +3367,22 @@ document.querySelector('.logo').addEventListener('click', function() {
   mensaje.style.fontFamily = "'Raleway', sans-serif";
   mensaje.style.fontSize = '1.2rem';
   mensaje.style.fontWeight = 'bold';
-  mensaje.style.zIndex = '999999'; // Valor MUY alto
+  mensaje.style.zIndex = '999999'; 
   mensaje.style.opacity = '0';
   mensaje.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
   mensaje.style.boxShadow = '0 0 30px rgba(255, 255, 255, 0.7), 0 0 60px rgba(139, 92, 246, 0.5)';
   mensaje.style.backdropFilter = 'blur(10px)';
   mensaje.style.webkitBackdropFilter = 'blur(10px)';
   mensaje.style.border = '2px solid rgba(255, 255, 255, 0.3)';
-  
-  // Asegurar que no esté dentro del contenedor con overflow:hidden
+ 
   document.body.appendChild(mensaje);
-  
-  // 4. Animación secuencial
+
   setTimeout(() => {
-    // Mostrar mensaje
     mensaje.style.opacity = '1';
     mensaje.style.transform = 'translate(-50%, -50%) scale(1.1)';
-    
     setTimeout(() => {
-      // Escalar mensaje y volver a normal
       mensaje.style.transform = 'translate(-50%, -50%) scale(1)';
-      
       setTimeout(() => {
-        // Ocultar mensaje
         mensaje.style.opacity = '0';
         mensaje.style.transform = 'translate(-50%, -50%) scale(0.8)';
         
@@ -3722,7 +3390,6 @@ document.querySelector('.logo').addEventListener('click', function() {
           mensaje.remove();
         }, 500);
         
-        // 5. Restaurar logo
         logo.style.transform = 'rotateY(0deg)';
         logo.style.opacity = '1';
         
@@ -3731,11 +3398,11 @@ document.querySelector('.logo').addEventListener('click', function() {
           logo.style.transition = '';
         }, 800);
         
-      }, 1500); // Tiempo que se muestra el mensaje
+      }, 1500); 
       
-    }, 300); // Tiempo escala del mensaje
+    }, 300); 
     
-  }, 400); // Tiempo inicio mensaje después de rotación
+  }, 400); 
 });
     
 </script>
@@ -3769,13 +3436,11 @@ setTimeout(() => {
 }, 100);
 
 document.getElementById("btnQuitarFoto").addEventListener("click", () => {
-  // Limpiar input y preview
   document.getElementById("inputFoto").value = "";
   const imgPreview = document.getElementById("previewFoto");
   imgPreview.src = "";
   imgPreview.classList.add("d-none");
 
-  // Ocultar botón y limpiar referencia global
   document.getElementById("btnQuitarFoto").classList.add("d-none");
   window.fotoOptimizada = null;
 
@@ -3784,23 +3449,21 @@ document.getElementById("btnQuitarFoto").addEventListener("click", () => {
    
 </script>
 <script>
-// FRONTEND - Enviar TODO en una sola llamada
+
 async function procesarPago() {
-    // 1. Obtener datos del formulario
     const nombre = document.querySelector('input[name="nombre"]').value;
     const apellido = document.querySelector('input[name="apellido"]').value;
     const email = document.querySelector('input[name="email"]').value;
     const telefono = document.querySelector('input[name="telefono"]').value;
-    
-    // 2. Preparar payload
+
     const payload = {
-        email_vendedor: window.email_vendedor, // Asegúrate de tener esto
+        email_vendedor: window.email_vendedor, 
         numero_vendedor: window.numero_vendedor,
         items: window.carritoActual,
         cliente_nombre: `${nombre} ${apellido}`.trim(),
         cliente_email: email,
         cliente_telefono: telefono,
-        orden_id: window.orden_id // Si tienes preorden, si no lo quitas
+        orden_id: window.orden_id 
     };
     
     console.log("[PAGAR] Enviando:", payload);
@@ -3817,9 +3480,7 @@ async function procesarPago() {
         if (data.error) {
             alert("Error: " + data.error);
         } else if (data.init_point) {
-            // Guardar el external_reference en localStorage para referencia
             localStorage.setItem('ultima_orden', data.external_reference);
-            // Redirigir a Mercado Pago
             window.location.href = data.init_point;
         }
         
