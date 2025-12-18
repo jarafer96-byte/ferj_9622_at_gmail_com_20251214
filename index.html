@@ -2772,7 +2772,7 @@ async function actualizarOfertasAutomaticamente() {
       let nuevoPrecioAnterior = 0;
   
       if (precioActual < promedioGrupo * 0.8) {
-        nuevoPrecioAnterior = Math.round(promedioGrupo); /
+        nuevoPrecioAnterior = Math.round(promedioGrupo);
         necesitaActualizar = true;
         console.log(`🔥 ${producto.nombre}: Está 20%+ bajo el promedio del grupo ($${precioActual} < $${promedioGrupo.toFixed(2)})`);
       }
