@@ -2157,7 +2157,7 @@ function filtrarSubcategoria(grupo, subgrupo) {
     console.log("📦 Productos filtrados:", productosFiltrados.length);
 
     renderPagina(1, productosFiltrados);
-
+    renderPaginacion(productosFiltrados);
     console.log("✅ Productos renderizados con paginación en #productos");
     console.log("📥 Hijos actuales en #productos:", cont.children.length);
     cont.style.opacity = '1';
