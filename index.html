@@ -168,7 +168,13 @@ h1, h2, h3, .btn, .card { font-family: 'Raleway', sans-serif; }
   0% { transform: translateY(-100px) rotate(5deg); opacity: 1; }
   100% { transform: translateY(100vh) rotate(5deg); opacity: 0.5; }
 }  
+  
+.card, .card-giratoria, .btn, .panel-grupos { will-change: transform, opacity; contain: content; }
+.logo, .card img { image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
 
+
+
+  
 </style>
 </head>
 <body class="container py-5 modo-oscuro">
